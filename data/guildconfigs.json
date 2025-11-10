@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "1762787124688mrvrkf0ct",
+    "guildId": "1428104425934688349",
+    "prefix": "!",
+    "ticketCategoryId": null,
+    "applicationChannelId": null,
+    "welcomeChannelId": "1428104426924806146",
+    "welcomeMessage": null,
+    "leaveChannelId": null,
+    "leaveMessage": null,
+    "logChannelId": null,
+    "muteRoleId": null,
+    "levelUpMessage": true,
+    "levelUpChannelId": null,
+    "createdAt": "2025-11-10T15:05:24.688Z"
+  }
+]

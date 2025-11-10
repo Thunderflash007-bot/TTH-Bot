@@ -1,0 +1,7 @@
+{
+  "xp": {
+    "minPerMessage": 15,
+    "maxPerMessage": 25,
+    "cooldown": 60000
+  }
+}
