@@ -5,15 +5,15 @@ class Application {
         this.db = new Database('applications');
     }
 
-    async findOne(query) {
+    findOne(query) {
         return this.db.findOne(query);
     }
 
-    async find(query) {
+    find(query) {
         return this.db.find(query);
     }
 
-    async save(data) {
+    save(data) {
         if (data._id) {
             return this.db.updateOne({ _id: data._id }, data);
         }
@@ -25,7 +25,7 @@ class Application {
         });
     }
 
-    async countDocuments(query) {
+    countDocuments(query) {
         return this.db.count(query);
     }
 

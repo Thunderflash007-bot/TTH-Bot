@@ -1,8 +1,8 @@
 const Database = require('../utils/database');
 
-class Ticket {
+class AutoRole {
     constructor() {
-        this.db = new Database('tickets');
+        this.db = new Database('autoroles');
     }
 
     findOne(query) {
@@ -19,18 +19,14 @@ class Ticket {
         }
         return this.db.insert({
             ...data,
-            type: data.type || 'support',
-            status: data.status || 'open'
+            createdAt: new Date(),
+            enabled: data.enabled !== false
         });
     }
 
-    countDocuments(query) {
-        return this.db.count(query);
-    }
-
-    findSorted(query, limit) {
-        return this.db.findSorted(query, 'createdAt', limit);
+    delete(query) {
+        return this.db.deleteOne(query);
     }
 }
 
-module.exports = new Ticket();
+module.exports = new AutoRole();

@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= currentGuild && guild ? guild.name + ' - ' : '' %>Dashboard - TTH-Bot</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-robot"></i>
+                <span>TTH-Bot Dashboard</span>
+            </div>
+            <div class="nav-links">
+                <span class="user-info">
+                    <img src="<%= user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/img/default-avatar.png' %>" alt="Avatar" class="avatar-small">
+                    <%= user.username %>
+                </span>
+                <a href="/" class="btn btn-secondary">Home</a>
+                <a href="/auth/logout" class="btn btn-secondary">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h3><i class="fas fa-server"></i> Deine Server</h3>
+            <div class="server-list">
+                <% if (guilds && guilds.length > 0) { %>
+                    <% guilds.forEach(g => { %>
+                        <a href="/dashboard/<%= g.id %>" class="server-item <%= g.id === currentGuild ? 'active' : '' %>">
+                            <% if (g.icon) { %>
+                                <img src="https://cdn.discordapp.com/icons/<%= g.id %>/<%= g.icon %>.png" alt="<%= g.name %>">
+                            <% } else { %>
+                                <div class="server-icon-placeholder"><%= g.name.charAt(0) %></div>
+                            <% } %>
+                            <span><%= g.name %></span>
+                        </a>
+                    <% }) %>
+                <% } else { %>
+                    <p class="no-servers">Keine Server mit Admin-Rechten gefunden</p>
+                <% } %>
+            </div>
+            
+            <% if (currentGuild) { %>
+                <div class="sidebar-info">
+                    <h4><i class="fas fa-info-circle"></i> Quick Info</h4>
+                    <div class="info-item">
+                        <span class="info-label">Bot Status:</span>
+                        <span class="info-value"><i class="fas fa-circle" style="color: #57F287;"></i> Online</span>
+                    </div>
+                </div>
+            <% } %>
+        </aside>
+
+        <main class="dashboard-content">
+            <% if (currentGuild && guild) { %>
+                <!-- Server Header -->
+                <div class="server-header">
+                    <div class="server-header-info">
+                        <% if (guild.icon) { %>
+                            <img src="https://cdn.discordapp.com/icons/<%= guild.id %>/<%= guild.icon %>.png" alt="<%= guild.name %>" class="server-icon-large">
+                        <% } else { %>
+                            <div class="server-icon-large server-icon-placeholder"><%= guild.name.charAt(0) %></div>
+                        <% } %>
+                        <div>
+                            <h1><%= guild.name %></h1>
+                            <p class="server-id">Server ID: <code><%= guild.id %></code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3><%= stats.totalTickets || 0 %></h3>
+                            <p>Gesamt Tickets</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3><%= stats.openTickets || 0 %></h3>
+                            <p>Offene Tickets</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3><%= stats.totalApplications || 0 %></h3>
+                            <p>Bewerbungen</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3><%= stats.pendingApplications || 0 %></h3>
+                            <p>Ausstehend</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="openTab(event, 'overview')">
+                            <i class="fas fa-home"></i> Übersicht
+                        </button>
+                        <button class="tab-btn" onclick="openTab(event, 'welcome')">
+                            <i class="fas fa-hand-wave"></i> Willkommen
+                        </button>
+                        <button class="tab-btn" onclick="openTab(event, 'tickets')">
+                            <i class="fas fa-ticket-alt"></i> Tickets
+                        </button>
+                        <button class="tab-btn" onclick="openTab(event, 'team')">
+                            <i class="fas fa-users"></i> Team
+                        </button>
+                        <button class="tab-btn" onclick="openTab(event, 'moderation')">
+                            <i class="fas fa-shield-alt"></i> Moderation
+                        </button>
+                        <button class="tab-btn" onclick="openTab(event, 'systems')">
+                            <i class="fas fa-cogs"></i> Systeme
+                        </button>
+                        <button class="tab-btn" onclick="openTab(event, 'automation')">
+                            <i class="fas fa-robot"></i> Automation
+                        </button>
+                        <button class="tab-btn" onclick="openTab(event, 'tools')">
+                            <i class="fas fa-toolbox"></i> Tools
+                        </button>
+                    </div>
+
+                    <!-- Overview Tab -->
+                    <div id="overview" class="tab-content active">
+                        <!-- Statistics Cards -->
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white;">
+                                <h4 style="margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;"><i class="fas fa-ticket-alt"></i> Tickets</h4>
+                                <h2 style="margin: 0; font-size: 36px;"><%= stats.totalTickets %></h2>
+                                <small style="opacity: 0.8;"><%= stats.openTickets %> offen</small>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; color: white;">
+                                <h4 style="margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;"><i class="fas fa-file-alt"></i> Bewerbungen</h4>
+                                <h2 style="margin: 0; font-size: 36px;"><%= stats.totalApplications %></h2>
+                                <small style="opacity: 0.8;"><%= stats.pendingApplications %> ausstehend</small>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 10px; color: white;">
+                                <h4 style="margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;"><i class="fas fa-terminal"></i> Commands</h4>
+                                <h2 style="margin: 0; font-size: 36px;"><%= customCommands.length %></h2>
+                                <small style="opacity: 0.8;">Eigene Befehle</small>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 20px; border-radius: 10px; color: white;">
+                                <h4 style="margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;"><i class="fas fa-robot"></i> Automation</h4>
+                                <h2 style="margin: 0; font-size: 36px;"><%= (scheduledMessages.length + autoRoles.length) %></h2>
+                                <small style="opacity: 0.8;"><%= autoRoles.length %> Auto-Rollen</small>
+                            </div>
+                        </div>
+
+                        <div class="content-grid">
+                            <div class="info-card">
+                                <h3><i class="fas fa-cog"></i> Konfiguration</h3>
+                                <div class="config-status">
+                                    <div class="status-item">
+                                        <i class="fas <%= config.welcomeChannelId ? 'fa-check-circle' : 'fa-times-circle' %>" style="color: <%= config.welcomeChannelId ? '#57F287' : '#ED4245' %>"></i>
+                                        <span>Willkommenssystem</span>
+                                    </div>
+                                    <div class="status-item">
+                                        <i class="fas <%= config.ticketCategoryId ? 'fa-check-circle' : 'fa-times-circle' %>" style="color: <%= config.ticketCategoryId ? '#57F287' : '#ED4245' %>"></i>
+                                        <span>Ticket-System</span>
+                                    </div>
+                                    <div class="status-item">
+                                        <i class="fas <%= config.supportRoleId ? 'fa-check-circle' : 'fa-times-circle' %>" style="color: <%= config.supportRoleId ? '#57F287' : '#ED4245' %>"></i>
+                                        <span>Support-Rolle</span>
+                                    </div>
+                                    <div class="status-item">
+                                        <i class="fas <%= (config.teamRoles && config.teamRoles.length > 0) ? 'fa-check-circle' : 'fa-times-circle' %>" style="color: <%= (config.teamRoles && config.teamRoles.length > 0) ? '#57F287' : '#ED4245' %>"></i>
+                                        <span>Team-Rollen (<%= (config.teamRoles && config.teamRoles.length) || 0 %>)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-card">
+                                <h3><i class="fas fa-book"></i> Quick Start</h3>
+                                <ol class="quick-start-list">
+                                    <li>Richte das <strong>Ticket-System</strong> ein mit <code>/setup-tickets</code></li>
+                                    <li>Konfiguriere das <strong>Willkommenssystem</strong> im Tab oben</li>
+                                    <li>Füge <strong>Team-Rollen</strong> mit <code>/team add-role</code> hinzu</li>
+                                    <li>Verwende <code>/help</code> für alle Commands</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <% if (tickets && tickets.length > 0) { %>
+                            <div class="info-card">
+                                <h3><i class="fas fa-history"></i> Letzte Tickets</h3>
+                                <div class="data-table">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>User</th>
+                                                <th>Typ</th>
+                                                <th>Status</th>
+                                                <th>Claimer</th>
+                                                <th>Erstellt</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% tickets.forEach(ticket => { %>
+                                                <tr>
+                                                    <td><code>#<%= ticket._id.toString().slice(-6) %></code></td>
+                                                    <td><i class="fas fa-user"></i> <%= ticket.userName || ticket.userId %></td>
+                                                    <td><span class="badge badge-info"><%= ticket.type || 'support' %></span></td>
+                                                    <td>
+                                                        <% if (ticket.status === 'open') { %>
+                                                            <span class="badge badge-success"><i class="fas fa-check-circle"></i> Offen</span>
+                                                        <% } else if (ticket.status === 'claimed') { %>
+                                                            <span class="badge badge-warning"><i class="fas fa-hand-paper"></i> In Bearbeitung</span>
+                                                        <% } else { %>
+                                                            <span class="badge badge-danger"><i class="fas fa-times-circle"></i> Geschlossen</span>
+                                                        <% } %>
+                                                    </td>
+                                                    <td>
+                                                        <% if (ticket.claimedBy) { %>
+                                                            <span style="color: #57F287;"><i class="fas fa-user-check"></i> <%= ticket.claimerName || ticket.claimedBy %></span>
+                                                        <% } else { %>
+                                                            <span style="color: #99AAB5;">-</span>
+                                                        <% } %>
+                                                    </td>
+                                                    <td><%= new Date(ticket.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
+                                                </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <!-- Welcome Tab -->
+                    <div id="welcome" class="tab-content">
+                        <div class="settings-section">
+                            <h2><i class="fas fa-hand-wave"></i> Willkommenssystem konfigurieren</h2>
+                            <p class="section-description">Begrüße neue Mitglieder automatisch mit personalisierten Nachrichten.</p>
+                            
+                            <form action="/api/config/welcome" method="POST" class="settings-form" id="welcomeForm">
+                                <input type="hidden" name="guildId" value="<%= currentGuild %>">
+                                
+                                <div class="form-group">
+                                    <label for="welcomeChannel">
+                                        <i class="fas fa-hashtag"></i> Willkommens-Channel
+                                    </label>
+                                    <select name="welcomeChannel" id="welcomeChannel" class="form-control">
+                                        <option value="">Automatische Erkennung</option>
+                                        <% if (channels && channels.length > 0) { %>
+                                            <% channels.forEach(channel => { %>
+                                                <option value="<%= channel.id %>" <%= config.welcomeChannelId === channel.id ? 'selected' : '' %>>
+                                                    # <%= channel.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                    <small>Leer lassen = Bot sucht automatisch nach passenden Channels</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="welcomeMessage">
+                                        <i class="fas fa-message"></i> Benutzerdefinierte Nachricht
+                                    </label>
+                                    <textarea name="welcomeMessage" id="welcomeMessage" rows="4" class="form-control" placeholder="Willkommen {user} auf unserem Server!"><%= config.welcomeMessage || '' %></textarea>
+                                    <small>
+                                        Verwende <code>{user}</code> für die User-Erwähnung. 
+                                        Leer lassen für zufällige Nachrichten (10+ Varianten).
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="leaveChannel">
+                                        <i class="fas fa-door-open"></i> Goodbye-Channel
+                                    </label>
+                                    <select name="leaveChannel" id="leaveChannel" class="form-control">
+                                        <option value="">Gleicher Channel wie Willkommen</option>
+                                        <% if (channels && channels.length > 0) { %>
+                                            <% channels.forEach(channel => { %>
+                                                <option value="<%= channel.id %>" <%= config.leaveChannelId === channel.id ? 'selected' : '' %>>
+                                                    # <%= channel.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Einstellungen speichern
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="testWelcomeMessage()">
+                                        <i class="fas fa-vial"></i> Test-Nachricht senden
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tickets Tab -->
+                    <div id="tickets" class="tab-content">
+                        <!-- Live Ticket Liste -->
+                        <% if (tickets && tickets.length > 0) { %>
+                            <div class="settings-section" style="margin-bottom: 30px;">
+                                <h2><i class="fas fa-list-ul"></i> Aktuelle Tickets</h2>
+                                <p class="section-description">Übersicht aller Tickets auf diesem Server.</p>
+                                
+                                <div class="data-table">
+                                    <table style="width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 10%;">ID</th>
+                                                <th style="width: 20%;">User</th>
+                                                <th style="width: 12%;">Typ</th>
+                                                <th style="width: 15%;">Status</th>
+                                                <th style="width: 20%;">Support-Mitarbeiter</th>
+                                                <th style="width: 23%;">Erstellt</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% tickets.forEach(ticket => { %>
+                                                <tr>
+                                                    <td><code style="background: #2C2F33; padding: 4px 8px; border-radius: 4px; color: #FFFFFF;">#<%= ticket._id.toString().slice(-6) %></code></td>
+                                                    <td>
+                                                        <i class="fas fa-user" style="color: #5865F2; margin-right: 5px;"></i>
+                                                        <strong><%= ticket.userName || ticket.userId %></strong>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge badge-info" style="font-size: 12px;">
+                                                            <i class="fas <%= ticket.type === 'support' ? 'fa-life-ring' : 'fa-file-alt' %>"></i>
+                                                            <%= ticket.type === 'support' ? 'Support' : 'Bewerbung' %>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <% if (ticket.status === 'open') { %>
+                                                            <span class="badge badge-success" style="font-size: 12px;">
+                                                                <i class="fas fa-check-circle"></i> Offen
+                                                            </span>
+                                                        <% } else if (ticket.status === 'claimed') { %>
+                                                            <span class="badge badge-warning" style="font-size: 12px;">
+                                                                <i class="fas fa-hand-paper"></i> In Bearbeitung
+                                                            </span>
+                                                        <% } else { %>
+                                                            <span class="badge badge-danger" style="font-size: 12px;">
+                                                                <i class="fas fa-times-circle"></i> Geschlossen
+                                                            </span>
+                                                        <% } %>
+                                                    </td>
+                                                    <td>
+                                                        <% if (ticket.claimedBy) { %>
+                                                            <span style="color: #57F287;">
+                                                                <i class="fas fa-user-check"></i>
+                                                                <strong><%= ticket.claimerName || 'Support-Team' %></strong>
+                                                            </span>
+                                                        <% } else if (ticket.assignedTo) { %>
+                                                            <span style="color: #FEE75C;">
+                                                                <i class="fas fa-user-tag"></i>
+                                                                <strong>Zugewiesen</strong>
+                                                            </span>
+                                                        <% } else { %>
+                                                            <span style="color: #99AAB5;">
+                                                                <i class="fas fa-minus-circle"></i> Nicht zugewiesen
+                                                            </span>
+                                                        <% } %>
+                                                    </td>
+                                                    <td style="color: #99AAB5; font-size: 13px;">
+                                                        <i class="fas fa-clock"></i>
+                                                        <%= new Date(ticket.createdAt).toLocaleDateString('de-DE', { 
+                                                            day: '2-digit', 
+                                                            month: '2-digit', 
+                                                            year: 'numeric', 
+                                                            hour: '2-digit', 
+                                                            minute: '2-digit' 
+                                                        }) %>
+                                                    </td>
+                                                </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="info-box info-box-info" style="margin-top: 15px;">
+                                    <i class="fas fa-info-circle"></i>
+                                    <div>
+                                        <strong>Live-Updates:</strong> Die Ticket-Liste wird automatisch aktualisiert, wenn neue Tickets erstellt oder bearbeitet werden.
+                                        Verwende die Buttons in Discord, um Tickets zu claimen oder zuzuweisen.
+                                    </div>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <div class="info-box info-box-warning" style="margin-bottom: 30px;">
+                                <i class="fas fa-inbox"></i>
+                                <div>
+                                    <strong>Keine Tickets vorhanden</strong><br>
+                                    Sobald User ein Ticket öffnen, erscheinen diese hier in der Übersicht.
+                                </div>
+                            </div>
+                        <% } %>
+                        
+                        <div class="settings-section">
+                            <h2><i class="fas fa-ticket-alt"></i> Ticket-System konfigurieren</h2>
+                            <p class="section-description">Richte ein professionelles Support-Ticket-System ein mit Claim/Unclaim/Assign Funktionen.</p>
+
+                            <form action="/api/config/tickets" method="POST" class="settings-form">
+                                <input type="hidden" name="guildId" value="<%= currentGuild %>">
+                                
+                                <div class="form-group">
+                                    <label for="ticketCategory">
+                                        <i class="fas fa-folder"></i> Ticket-Kategorie
+                                    </label>
+                                    <select name="ticketCategory" id="ticketCategory" class="form-control">
+                                        <option value="">Keine Kategorie (Tickets in Root)</option>
+                                        <% if (categories && categories.length > 0) { %>
+                                            <% categories.forEach(category => { %>
+                                                <option value="<%= category.id %>" <%= config.ticketCategoryId === category.id ? 'selected' : '' %>>
+                                                    📁 <%= category.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                    <small>Alle Ticket-Channels werden in dieser Kategorie erstellt</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="supportRole">
+                                        <i class="fas fa-user-shield"></i> Support-Rolle
+                                    </label>
+                                    <select name="supportRole" id="supportRole" class="form-control">
+                                        <option value="">Keine Support-Rolle</option>
+                                        <% if (roles && roles.length > 0) { %>
+                                            <% roles.forEach(role => { %>
+                                                <option value="<%= role.id %>" <%= config.supportRoleId === role.id ? 'selected' : '' %>>
+                                                    @<%= role.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                    <small>Diese Rolle kann Tickets sehen, claimen und zuweisen</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-list"></i> Ticket-Features
+                                    </label>
+                                    <div class="feature-list">
+                                        <div class="feature-item">
+                                            <i class="fas fa-check" style="color: #57F287;"></i>
+                                            <span>Ticket-Ersteller kann selbst schließen</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check" style="color: #57F287;"></i>
+                                            <span>Claim-System für Support-Team</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check" style="color: #57F287;"></i>
+                                            <span>Ticket-Zuweisung an Team-Mitglieder</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check" style="color: #57F287;"></i>
+                                            <span>DM-Benachrichtigungen beim Schließen</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Einstellungen speichern
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Team Tab -->
+                    <div id="team" class="tab-content">
+                        <div class="settings-section">
+                            <h2><i class="fas fa-users"></i> Team-Management</h2>
+                            <p class="section-description">Verwalte dein Server-Team mit Rollen und Rängen.</p>
+
+                            <!-- Team-Rolle hinzufügen -->
+                            <div class="settings-section" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                                <h3><i class="fas fa-plus-circle"></i> Team-Rolle hinzufügen</h3>
+                                <form id="addTeamRoleForm" class="settings-form">
+                                    <input type="hidden" name="guildId" value="<%= currentGuild %>">
+                                    
+                                    <div class="form-group">
+                                        <label for="teamRole">
+                                            <i class="fas fa-at"></i> Rolle auswählen
+                                        </label>
+                                        <select name="roleId" id="teamRole" class="form-control" required>
+                                            <option value="">-- Rolle wählen --</option>
+                                            <% if (roles && roles.length > 0) { %>
+                                                <% roles.forEach(role => { %>
+                                                    <option value="<%= role.id %>" data-name="<%= role.name %>">
+                                                        @<%= role.name %>
+                                                    </option>
+                                                <% }) %>
+                                            <% } %>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="teamRank">
+                                            <i class="fas fa-star"></i> Rang zuweisen
+                                        </label>
+                                        <select name="rank" id="teamRank" class="form-control" required>
+                                            <option value="">-- Rang wählen --</option>
+                                            <option value="Owner">👑 Owner</option>
+                                            <option value="Admin">⚡ Admin</option>
+                                            <option value="Moderator">🛡️ Moderator</option>
+                                            <option value="Supporter">💬 Supporter</option>
+                                            <option value="Developer">💻 Developer</option>
+                                            <option value="Content Creator">✏️ Content Creator</option>
+                                            <option value="Trial">⏱️ Trial</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i> Rolle hinzufügen
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Konfigurierte Team-Rollen -->
+                            <% if (config.teamRoles && config.teamRoles.length > 0) { %>
+                                <div class="team-roles-list">
+                                    <h3>Konfigurierte Team-Rollen (<%= config.teamRoles.length %>)</h3>
+                                    <div class="team-list">
+                                        <% config.teamRoles.forEach(teamRole => { %>
+                                            <div class="team-item">
+                                                <div class="team-role">
+                                                    <span class="role-badge role-<%= teamRole.rank.toLowerCase().replace(' ', '-') %>">
+                                                        <%= teamRole.rank %>
+                                                    </span>
+                                                    <span>@<%= teamRole.roleName %></span>
+                                                </div>
+                                                <button class="btn btn-secondary btn-sm" onclick="removeTeamRole('<%= teamRole.roleId %>')">
+                                                    <i class="fas fa-trash"></i> Entfernen
+                                                </button>
+                                            </div>
+                                        <% }) %>
+                                    </div>
+                                </div>
+                            <% } else { %>
+                                <div class="empty-state">
+                                    <i class="fas fa-users-slash"></i>
+                                    <p>Noch keine Team-Rollen konfiguriert</p>
+                                    <p class="small">Füge oben eine Rolle hinzu</p>
+                                </div>
+                            <% } %>
+
+                            <!-- Verfügbare Ränge Info -->
+                            <div class="team-ranks">
+                                <h3>Rang-Bedeutungen:</h3>
+                                <div class="rank-grid">
+                                    <div class="rank-card">
+                                        <i class="fas fa-crown" style="color: #FFD700;"></i>
+                                        <h4>Owner</h4>
+                                        <p>Server-Besitzer</p>
+                                    </div>
+                                    <div class="rank-card">
+                                        <i class="fas fa-bolt" style="color: #FEE75C;"></i>
+                                        <h4>Admin</h4>
+                                        <p>Administrator</p>
+                                    </div>
+                                    <div class="rank-card">
+                                        <i class="fas fa-shield-alt" style="color: #5865F2;"></i>
+                                        <h4>Moderator</h4>
+                                        <p>Moderation</p>
+                                    </div>
+                                    <div class="rank-card">
+                                        <i class="fas fa-comments" style="color: #57F287;"></i>
+                                        <h4>Supporter</h4>
+                                        <p>Support-Team</p>
+                                    </div>
+                                    <div class="rank-card">
+                                        <i class="fas fa-code" style="color: #9B59B6;"></i>
+                                        <h4>Developer</h4>
+                                        <p>Entwickler</p>
+                                    </div>
+                                    <div class="rank-card">
+                                        <i class="fas fa-pencil" style="color: #E91E63;"></i>
+                                        <h4>Content Creator</h4>
+                                        <p>Content</p>
+                                    </div>
+                                    <div class="rank-card">
+                                        <i class="fas fa-user-clock" style="color: #95A5A6;"></i>
+                                        <h4>Trial</h4>
+                                        <p>Probezeit</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Moderation Tab -->
+                    <div id="moderation" class="tab-content">
+                        <div class="settings-section">
+                            <h2><i class="fas fa-shield-alt"></i> Moderation</h2>
+                            <p class="section-description">Moderations-Tools und Einstellungen.</p>
+                            
+                            <!-- Log-Channel Konfiguration -->
+                            <form action="/api/config/moderation" method="POST" class="settings-form" style="margin-bottom: 30px;">
+                                <input type="hidden" name="guildId" value="<%= currentGuild %>">
+                                
+                                <div class="form-group">
+                                    <label for="logChannel">
+                                        <i class="fas fa-scroll"></i> Log-Channel
+                                    </label>
+                                    <select name="logChannel" id="logChannel" class="form-control">
+                                        <option value="">Kein Log-Channel</option>
+                                        <% if (channels && channels.length > 0) { %>
+                                            <% channels.forEach(channel => { %>
+                                                <option value="<%= channel.id %>" <%= config.logChannelId === channel.id ? 'selected' : '' %>>
+                                                    # <%= channel.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                    <small>Moderations-Aktionen (Ban, Kick, etc.) werden hier geloggt</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="muteRole">
+                                        <i class="fas fa-volume-mute"></i> Mute-Rolle
+                                    </label>
+                                    <select name="muteRole" id="muteRole" class="form-control">
+                                        <option value="">Keine Mute-Rolle</option>
+                                        <% if (roles && roles.length > 0) { %>
+                                            <% roles.forEach(role => { %>
+                                                <option value="<%= role.id %>" <%= config.muteRoleId === role.id ? 'selected' : '' %>>
+                                                    @<%= role.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                    <small>Rolle für temporäre Mutes (muss manuell erstellt werden)</small>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Einstellungen speichern
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <div class="mod-commands">
+                                <h3>Verfügbare Commands:</h3>
+                                <div class="command-grid">
+                                    <div class="command-card">
+                                        <div class="command-icon" style="background: #ED4245;">
+                                            <i class="fas fa-hammer"></i>
+                                        </div>
+                                        <div class="command-info">
+                                            <h4>/ban</h4>
+                                            <p>Bannt einen User vom Server</p>
+                                            <span class="command-perm">Berechtigung: BAN_MEMBERS</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="command-card">
+                                        <div class="command-icon" style="background: #FEE75C;">
+                                            <i class="fas fa-shoe-prints"></i>
+                                        </div>
+                                        <div class="command-info">
+                                            <h4>/kick</h4>
+                                            <p>Kickt einen User vom Server</p>
+                                            <span class="command-perm">Berechtigung: KICK_MEMBERS</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="command-card">
+                                        <div class="command-icon" style="background: #5865F2;">
+                                            <i class="fas fa-broom"></i>
+                                        </div>
+                                        <div class="command-info">
+                                            <h4>/clear</h4>
+                                            <p>Löscht Nachrichten (1-100)</p>
+                                            <span class="command-perm">Berechtigung: MANAGE_MESSAGES</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-box info-box-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div>
+                                    <strong>Hinweis:</strong> Alle Moderations-Aktionen werden automatisch geloggt und können später nachvollzogen werden.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Systeme Tab -->
+                    <div id="systems" class="tab-content">
+                        <!-- XP/Level System -->
+                        <div class="settings-section">
+                            <h2><i class="fas fa-star"></i> XP & Level-System</h2>
+                            <p class="section-description">Konfiguriere das automatische XP- und Level-System.</p>
+                            
+                            <form action="/api/config/xp" method="POST" class="settings-form">
+                                <input type="hidden" name="guildId" value="<%= currentGuild %>">
+                                
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" name="levelUpMessage" value="true" <%= config.levelUpMessage !== false ? 'checked' : '' %>>
+                                        Level-Up Nachrichten aktivieren
+                                    </label>
+                                    <small>Zeigt eine Nachricht, wenn ein User ein neues Level erreicht</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="levelUpChannel">
+                                        <i class="fas fa-hashtag"></i> Level-Up Channel
+                                    </label>
+                                    <select name="levelUpChannel" id="levelUpChannel" class="form-control">
+                                        <option value="">Im aktuellen Channel</option>
+                                        <% if (channels && channels.length > 0) { %>
+                                            <% channels.forEach(channel => { %>
+                                                <option value="<%= channel.id %>" <%= config.levelUpChannelId === channel.id ? 'selected' : '' %>>
+                                                    # <%= channel.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                    <small>Leer lassen = Level-Up wird im Chat gepostet, wo die Nachricht kam</small>
+                                </div>
+
+                                <div class="info-box info-box-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <div>
+                                        <strong>XP-Settings:</strong> User erhalten 15-25 XP pro Nachricht mit 60 Sekunden Cooldown.
+                                        Diese Werte kannst du in <code>bot/config.json</code> anpassen.
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Einstellungen speichern
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Application System -->
+                        <div class="settings-section" style="margin-top: 30px;">
+                            <h2><i class="fas fa-file-alt"></i> Bewerbungs-System</h2>
+                            <p class="section-description">Richte einen Channel für eingegangene Bewerbungen ein.</p>
+                            
+                            <form action="/api/config/applications" method="POST" class="settings-form">
+                                <input type="hidden" name="guildId" value="<%= currentGuild %>">
+                                
+                                <div class="form-group">
+                                    <label for="applicationChannel">
+                                        <i class="fas fa-hashtag"></i> Bewerbungs-Channel
+                                    </label>
+                                    <select name="applicationChannel" id="applicationChannel" class="form-control">
+                                        <option value="">Kein Channel</option>
+                                        <% if (channels && channels.length > 0) { %>
+                                            <% channels.forEach(channel => { %>
+                                                <option value="<%= channel.id %>" <%= config.applicationChannelId === channel.id ? 'selected' : '' %>>
+                                                    # <%= channel.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                    <small>Hier werden eingegangene Bewerbungen gepostet</small>
+                                </div>
+
+                                <div class="info-box info-box-info">
+                                    <i class="fas fa-lightbulb"></i>
+                                    <div>
+                                        <strong>Bewerbungs-Button erstellen:</strong> Verwende <code>/setup-tickets</code> im Discord,
+                                        um ein Panel mit "Bewerbung senden" Button zu erstellen.
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Einstellungen speichern
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Automation Tab -->
+                    <div id="automation" class="tab-content">
+                        <!-- Scheduled Messages -->
+                        <div class="settings-section">
+                            <h2><i class="fas fa-clock"></i> Geplante Nachrichten</h2>
+                            <p class="section-description">Erstelle automatische Nachrichten, die zu bestimmten Zeiten oder regelmäßig gepostet werden.</p>
+                            
+                            <div class="info-box info-box-info" style="margin-bottom: 20px;">
+                                <i class="fas fa-lightbulb"></i>
+                                <div>
+                                    <strong>Beispiele:</strong> Tägliche Erinnerungen, wöchentliche Events, monatliche Ankündigungen, 
+                                    Geburtstags-Nachrichten, Server-Regeln alle 6 Stunden, etc.
+                                </div>
+                            </div>
+
+                            <form action="/api/automation/scheduled-message" method="POST" class="settings-form" style="background: white; padding: 25px; border-radius: 10px;">
+                                <input type="hidden" name="guildId" value="<%= currentGuild %>">
+                                
+                                <div class="form-group">
+                                    <label for="scheduleChannel">
+                                        <i class="fas fa-hashtag"></i> Ziel-Channel
+                                    </label>
+                                    <select name="channel" id="scheduleChannel" class="form-control" required>
+                                        <option value="">Channel auswählen</option>
+                                        <% if (channels && channels.length > 0) { %>
+                                            <% channels.forEach(channel => { %>
+                                                <option value="<%= channel.id %>">
+                                                    # <%= channel.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                    <small>In diesem Channel wird die Nachricht gepostet</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="scheduleMessage">
+                                        <i class="fas fa-comment"></i> Nachricht
+                                    </label>
+                                    <textarea name="message" id="scheduleMessage" class="form-control" rows="4" required placeholder="Deine automatische Nachricht...
+
+Verfügbare Variablen:
+{server} - Server-Name
+{members} - Mitglieder-Anzahl
+{date} - Aktuelles Datum
+{time} - Aktuelle Uhrzeit"></textarea>
+                                    <small>Verwende {server}, {members}, {date}, {time} für dynamische Inhalte</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="scheduleType">
+                                        <i class="fas fa-calendar"></i> Zeitplan-Typ
+                                    </label>
+                                    <select name="scheduleType" id="scheduleType" class="form-control" required onchange="toggleScheduleOptions(this.value)">
+                                        <option value="">Typ auswählen</option>
+                                        <option value="once">Einmalig (zu einem bestimmten Zeitpunkt)</option>
+                                        <option value="daily">Täglich (jeden Tag zur gleichen Zeit)</option>
+                                        <option value="weekly">Wöchentlich (z.B. jeden Montag)</option>
+                                        <option value="interval">Intervall (z.B. alle 6 Stunden)</option>
+                                        <option value="cron">Erweitert (Cron-Expression)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Once/Daily Time -->
+                                <div class="form-group schedule-option" id="timeOption" style="display: none;">
+                                    <label for="scheduleTime">
+                                        <i class="fas fa-clock"></i> Uhrzeit
+                                    </label>
+                                    <input type="time" name="time" id="scheduleTime" class="form-control" value="12:00">
+                                    <small>Die Nachricht wird zu dieser Uhrzeit gesendet</small>
+                                </div>
+
+                                <!-- Once Date -->
+                                <div class="form-group schedule-option" id="dateOption" style="display: none;">
+                                    <label for="scheduleDate">
+                                        <i class="fas fa-calendar-day"></i> Datum
+                                    </label>
+                                    <input type="date" name="date" id="scheduleDate" class="form-control">
+                                    <small>Datum für einmalige Nachricht</small>
+                                </div>
+
+                                <!-- Weekly Day -->
+                                <div class="form-group schedule-option" id="dayOption" style="display: none;">
+                                    <label for="scheduleDay">
+                                        <i class="fas fa-calendar-week"></i> Wochentag
+                                    </label>
+                                    <select name="day" id="scheduleDay" class="form-control">
+                                        <option value="0">Sonntag</option>
+                                        <option value="1" selected>Montag</option>
+                                        <option value="2">Dienstag</option>
+                                        <option value="3">Mittwoch</option>
+                                        <option value="4">Donnerstag</option>
+                                        <option value="5">Freitag</option>
+                                        <option value="6">Samstag</option>
+                                    </select>
+                                </div>
+
+                                <!-- Interval -->
+                                <div class="form-group schedule-option" id="intervalOption" style="display: none;">
+                                    <label for="scheduleInterval">
+                                        <i class="fas fa-redo"></i> Intervall
+                                    </label>
+                                    <div style="display: flex; gap: 10px;">
+                                        <input type="number" name="intervalValue" id="scheduleInterval" class="form-control" value="6" min="1" style="flex: 2;">
+                                        <select name="intervalUnit" class="form-control" style="flex: 3;">
+                                            <option value="minutes">Minuten</option>
+                                            <option value="hours" selected>Stunden</option>
+                                            <option value="days">Tage</option>
+                                        </select>
+                                    </div>
+                                    <small>Wie oft soll die Nachricht wiederholt werden?</small>
+                                </div>
+
+                                <!-- Cron Expression -->
+                                <div class="form-group schedule-option" id="cronOption" style="display: none;">
+                                    <label for="scheduleCron">
+                                        <i class="fas fa-terminal"></i> Cron-Expression
+                                    </label>
+                                    <input type="text" name="cron" id="scheduleCron" class="form-control" placeholder="0 */6 * * *">
+                                    <small>
+                                        Erweiterte Zeitplanung. Beispiele:<br>
+                                        <code>0 12 * * *</code> - Täglich um 12:00<br>
+                                        <code>0 */6 * * *</code> - Alle 6 Stunden<br>
+                                        <code>0 9 * * 1</code> - Jeden Montag um 9:00
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" name="enabled" value="true" checked>
+                                        Sofort aktivieren
+                                    </label>
+                                    <small>Deaktiviere dies, um die Nachricht erst später zu starten</small>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Geplante Nachricht erstellen
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Liste der geplanten Nachrichten -->
+                            <% if (scheduledMessages && scheduledMessages.length > 0) { %>
+                                <div style="margin-top: 25px;">
+                                    <h3 style="margin-bottom: 15px;"><i class="fas fa-list"></i> Aktive geplante Nachrichten</h3>
+                                    <div class="data-table">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Channel</th>
+                                                    <th>Nachricht (Vorschau)</th>
+                                                    <th>Zeitplan</th>
+                                                    <th>Status</th>
+                                                    <th>Aktionen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% scheduledMessages.forEach(msg => { %>
+                                                    <tr>
+                                                        <td><code>#<%= channels.find(c => c.id === msg.channelId)?.name || msg.channelId %></code></td>
+                                                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                            <%= msg.message.substring(0, 50) %><%= msg.message.length > 50 ? '...' : '' %>
+                                                        </td>
+                                                        <td>
+                                                            <% if (msg.scheduleType === 'once') { %>
+                                                                <span class="badge badge-info">Einmalig: <%= msg.date %> <%= msg.time %></span>
+                                                            <% } else if (msg.scheduleType === 'daily') { %>
+                                                                <span class="badge badge-success">Täglich: <%= msg.time %></span>
+                                                            <% } else if (msg.scheduleType === 'weekly') { %>
+                                                                <span class="badge badge-success">Wöchentlich: <%= ['So','Mo','Di','Mi','Do','Fr','Sa'][msg.day] %> <%= msg.time %></span>
+                                                            <% } else if (msg.scheduleType === 'interval') { %>
+                                                                <span class="badge badge-warning">Alle <%= msg.intervalValue %> <%= msg.intervalUnit %></span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <% if (msg.enabled) { %>
+                                                                <span style="color: #57F287;">✅ Aktiv</span>
+                                                            <% } else { %>
+                                                                <span style="color: #99AAB5;">⏸️ Pausiert</span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <button onclick="deleteScheduledMessage('<%= msg._id %>')" class="btn btn-sm" style="background: #ED4245; color: white;">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <!-- Auto-Roles -->
+                        <div class="settings-section" style="margin-top: 30px;">
+                            <h2><i class="fas fa-user-tag"></i> Automatische Rollen</h2>
+                            <p class="section-description">Weise Mitgliedern automatisch Rollen zu basierend auf verschiedenen Kriterien.</p>
+                            
+                            <form action="/api/automation/auto-role" method="POST" class="settings-form" style="background: white; padding: 25px; border-radius: 10px;">
+                                <input type="hidden" name="guildId" value="<%= currentGuild %>">
+                                
+                                <div class="form-group">
+                                    <label for="autoRoleType">
+                                        <i class="fas fa-sliders-h"></i> Rollen-Typ
+                                    </label>
+                                    <select name="type" id="autoRoleType" class="form-control" required onchange="toggleAutoRoleOptions(this.value)">
+                                        <option value="">Typ auswählen</option>
+                                        <option value="join">Bei Server-Beitritt</option>
+                                        <option value="level">Bei Level-Erreichen</option>
+                                        <option value="time">Nach Zeit auf Server</option>
+                                        <option value="boost">Bei Server-Boost</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="autoRole">
+                                        <i class="fas fa-at"></i> Rolle
+                                    </label>
+                                    <select name="roleId" id="autoRole" class="form-control" required>
+                                        <option value="">Rolle auswählen</option>
+                                        <% if (roles && roles.length > 0) { %>
+                                            <% roles.forEach(role => { %>
+                                                <option value="<%= role.id %>" style="color: <%= role.color %>">
+                                                    @ <%= role.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                    <small>Diese Rolle wird automatisch vergeben</small>
+                                </div>
+
+                                <!-- Level Threshold -->
+                                <div class="form-group autorole-option" id="levelOption" style="display: none;">
+                                    <label for="autoRoleLevel">
+                                        <i class="fas fa-star"></i> Level
+                                    </label>
+                                    <input type="number" name="level" id="autoRoleLevel" class="form-control" value="10" min="1" max="100">
+                                    <small>Rolle wird bei diesem Level vergeben</small>
+                                </div>
+
+                                <!-- Time Threshold -->
+                                <div class="form-group autorole-option" id="timeThresholdOption" style="display: none;">
+                                    <label for="autoRoleTime">
+                                        <i class="fas fa-hourglass"></i> Dauer
+                                    </label>
+                                    <div style="display: flex; gap: 10px;">
+                                        <input type="number" name="timeValue" id="autoRoleTime" class="form-control" value="7" min="1" style="flex: 2;">
+                                        <select name="timeUnit" class="form-control" style="flex: 3;">
+                                            <option value="hours">Stunden</option>
+                                            <option value="days" selected>Tage</option>
+                                            <option value="weeks">Wochen</option>
+                                        </select>
+                                    </div>
+                                    <small>Rolle wird nach dieser Zeit vergeben</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" name="enabled" value="true" checked>
+                                        Aktiviert
+                                    </label>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Auto-Rolle erstellen
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Liste der Auto-Roles -->
+                            <% if (autoRoles && autoRoles.length > 0) { %>
+                                <div style="margin-top: 25px;">
+                                    <h3 style="margin-bottom: 15px;"><i class="fas fa-list"></i> Aktive Auto-Rollen</h3>
+                                    <div class="data-table">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Rolle</th>
+                                                    <th>Typ</th>
+                                                    <th>Bedingung</th>
+                                                    <th>Status</th>
+                                                    <th>Aktionen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% autoRoles.forEach(ar => { 
+                                                    const role = roles.find(r => r.id === ar.roleId);
+                                                %>
+                                                    <tr>
+                                                        <td>
+                                                            <span style="color: <%= role?.color || '#99AAB5' %>;">
+                                                                @ <%= role?.name || ar.roleId %>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <% if (ar.type === 'join') { %>
+                                                                <span class="badge badge-success"><i class="fas fa-door-open"></i> Bei Beitritt</span>
+                                                            <% } else if (ar.type === 'level') { %>
+                                                                <span class="badge badge-info"><i class="fas fa-star"></i> Bei Level <%= ar.level %></span>
+                                                            <% } else if (ar.type === 'time') { %>
+                                                                <span class="badge badge-warning"><i class="fas fa-clock"></i> Nach <%= ar.timeValue %> <%= ar.timeUnit %></span>
+                                                            <% } else if (ar.type === 'boost') { %>
+                                                                <span class="badge" style="background: #F47FFF;"><i class="fas fa-rocket"></i> Bei Boost</span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <% if (ar.type === 'join') { %>
+                                                                Sofort beim Server-Beitritt
+                                                            <% } else if (ar.type === 'level') { %>
+                                                                Level <%= ar.level %> erreicht
+                                                            <% } else if (ar.type === 'time') { %>
+                                                                <%= ar.timeValue %> <%= ar.timeUnit %> auf Server
+                                                            <% } else if (ar.type === 'boost') { %>
+                                                                Server geboostet
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <% if (ar.enabled) { %>
+                                                                <span style="color: #57F287;">✅ Aktiv</span>
+                                                            <% } else { %>
+                                                                <span style="color: #99AAB5;">⏸️ Deaktiviert</span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <button onclick="deleteAutoRole('<%= ar._id %>')" class="btn btn-sm" style="background: #ED4245; color: white;">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <!-- Quick Announcements -->
+                        <div class="settings-section" style="margin-top: 30px; border-top: 2px solid #E3E5E8; padding-top: 30px;">
+                            <h2><i class="fas fa-bullhorn"></i> Schnelle Ankündigung</h2>
+                            <p class="section-description">Sende sofort eine Ankündigung an einen oder mehrere Channels.</p>
+                            
+                            <form onsubmit="sendAnnouncement(event)" class="settings-form" style="background: white; padding: 25px; border-radius: 10px;">
+                                <input type="hidden" name="guildId" value="<%= currentGuild %>">
+                                
+                                <div class="form-group">
+                                    <label for="announcementChannels">
+                                        <i class="fas fa-hashtag"></i> Ziel-Channels (Mehrfachauswahl)
+                                    </label>
+                                    <select name="channels" id="announcementChannels" class="form-control" multiple size="5" required>
+                                        <% if (channels && channels.length > 0) { %>
+                                            <% channels.forEach(channel => { %>
+                                                <option value="<%= channel.id %>">
+                                                    # <%= channel.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                    <small>Halte Strg/Cmd gedrückt für Mehrfachauswahl</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="announcementTitle">
+                                        <i class="fas fa-heading"></i> Titel (optional)
+                                    </label>
+                                    <input type="text" name="title" id="announcementTitle" class="form-control" placeholder="Wichtige Ankündigung">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="announcementMessage">
+                                        <i class="fas fa-comment-alt"></i> Nachricht
+                                    </label>
+                                    <textarea name="message" id="announcementMessage" class="form-control" rows="5" required placeholder="Deine Ankündigung..."></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="announcementMention">
+                                        <i class="fas fa-at"></i> Erwähnung (optional)
+                                    </label>
+                                    <select name="mention" id="announcementMention" class="form-control">
+                                        <option value="">Keine Erwähnung</option>
+                                        <option value="@everyone">@everyone</option>
+                                        <option value="@here">@here</option>
+                                        <% if (roles && roles.length > 0) { %>
+                                            <% roles.forEach(role => { %>
+                                                <option value="<%= role.id %>">
+                                                    @ <%= role.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" name="useEmbed" value="true" checked>
+                                        Als schönes Embed senden
+                                    </label>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                                        <i class="fas fa-paper-plane"></i> Ankündigung senden
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Custom Commands -->
+                        <div class="settings-section" style="margin-top: 30px; border-top: 2px solid #E3E5E8; padding-top: 30px;">
+                            <h2><i class="fas fa-terminal"></i> Eigene Befehle</h2>
+                            <p class="section-description">Erstelle eigene Text-Commands mit Variablen, Embeds und mehr.</p>
+                            
+                            <form action="/api/automation/custom-command" method="POST" class="settings-form" style="background: white; padding: 25px; border-radius: 10px;">
+                                <input type="hidden" name="guildId" value="<%= currentGuild %>">
+                                
+                                <div class="form-group">
+                                    <label for="commandName">
+                                        <i class="fas fa-tag"></i> Command-Name
+                                    </label>
+                                    <input type="text" name="name" id="commandName" class="form-control" required placeholder="z.B. regeln, team, faq" pattern="[a-z0-9\-]+" maxlength="32">
+                                    <small>Nur Kleinbuchstaben, Zahlen und Bindestriche (keine Leerzeichen)</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="commandResponse">
+                                        <i class="fas fa-comment-alt"></i> Antwort
+                                    </label>
+                                    <textarea name="response" id="commandResponse" class="form-control" rows="5" required placeholder="Die Antwort, die der Bot sendet...
+
+Verfügbare Variablen:
+{user} - Username
+{mention} - User-Mention
+{server} - Server-Name
+{members} - Mitglieder-Anzahl"></textarea>
+                                    <small>Verwende {user}, {mention}, {server}, {members}</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="commandEmbed">
+                                        <i class="fas fa-window-maximize"></i> Als Embed senden?
+                                    </label>
+                                    <select name="useEmbed" id="commandEmbed" class="form-control">
+                                        <option value="false">Nein - Normale Nachricht</option>
+                                        <option value="true">Ja - Schönes Embed</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="commandColor">
+                                        <i class="fas fa-palette"></i> Embed-Farbe (optional)
+                                    </label>
+                                    <input type="color" name="embedColor" id="commandColor" class="form-control" value="#5865F2">
+                                    <small>Nur wenn Embed aktiviert ist</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" name="deleteInvoke" value="true">
+                                        Befehlsnachricht löschen
+                                    </label>
+                                    <small>Löscht die Nachricht des Users nach Ausführung</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" name="enabled" value="true" checked>
+                                        Aktiviert
+                                    </label>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Command erstellen
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Liste der Custom Commands -->
+                            <% if (customCommands && customCommands.length > 0) { %>
+                                <div style="margin-top: 25px;">
+                                    <h3 style="margin-bottom: 15px;"><i class="fas fa-list"></i> Deine Commands</h3>
+                                    <div class="data-table">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Command</th>
+                                                    <th>Typ</th>
+                                                    <th>Verwendet</th>
+                                                    <th>Status</th>
+                                                    <th>Aktionen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% customCommands.forEach(cmd => { %>
+                                                    <tr>
+                                                        <td>
+                                                            <code style="background: #2C2F33; padding: 4px 8px; border-radius: 4px; color: #5865F2;">
+                                                                !<%= cmd.name %>
+                                                            </code>
+                                                        </td>
+                                                        <td>
+                                                            <% if (cmd.useEmbed) { %>
+                                                                <span class="badge badge-info"><i class="fas fa-window-maximize"></i> Embed</span>
+                                                            <% } else { %>
+                                                                <span class="badge badge-secondary"><i class="fas fa-comment"></i> Text</span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <span style="color: #99AAB5;">
+                                                                <i class="fas fa-chart-line"></i> <%= cmd.uses || 0 %>x
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <% if (cmd.enabled) { %>
+                                                                <span style="color: #57F287;">✅ Aktiv</span>
+                                                            <% } else { %>
+                                                                <span style="color: #99AAB5;">⏸️ Deaktiviert</span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <button onclick="deleteCustomCommand('<%= cmd._id %>')" class="btn btn-sm" style="background: #ED4245; color: white;">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Tools Tab -->
+                    <div id="tools" class="tab-content">
+                        <!-- Backup & Restore -->
+                        <div class="settings-section">
+                            <h2><i class="fas fa-database"></i> Backup & Wiederherstellung</h2>
+                            <p class="section-description">Sichere deine Server-Konfiguration oder stelle sie wieder her.</p>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                                <div style="background: white; padding: 25px; border-radius: 10px; border: 2px solid #57F287;">
+                                    <h3 style="margin-bottom: 15px;"><i class="fas fa-download"></i> Backup erstellen</h3>
+                                    <p style="color: #6c757d; margin-bottom: 20px;">
+                                        Erstellt eine JSON-Datei mit allen Einstellungen, Tickets, Custom Commands und mehr.
+                                    </p>
+                                    <button onclick="createBackup()" class="btn btn-primary" style="width: 100%; background: #57F287;">
+                                        <i class="fas fa-download"></i> Jetzt Backup erstellen
+                                    </button>
+                                    <small style="display: block; margin-top: 10px; color: #6c757d;">
+                                        <i class="fas fa-info-circle"></i> Enthält: Config, Tickets, Applications, Custom Commands, Auto-Roles
+                                    </small>
+                                </div>
+
+                                <div style="background: white; padding: 25px; border-radius: 10px; border: 2px solid #5865F2;">
+                                    <h3 style="margin-bottom: 15px;"><i class="fas fa-upload"></i> Backup wiederherstellen</h3>
+                                    <p style="color: #6c757d; margin-bottom: 20px;">
+                                        Stelle eine gespeicherte Konfiguration aus einer Backup-Datei wieder her.
+                                    </p>
+                                    <form onsubmit="restoreBackup(event)" enctype="multipart/form-data">
+                                        <input type="file" id="backupFile" accept=".json" class="form-control" required style="margin-bottom: 10px;">
+                                        <button type="submit" class="btn btn-primary" style="width: 100%; background: #5865F2;">
+                                            <i class="fas fa-upload"></i> Backup hochladen
+                                        </button>
+                                    </form>
+                                    <small style="display: block; margin-top: 10px; color: #ED4245;">
+                                        <i class="fas fa-exclamation-triangle"></i> Überschreibt aktuelle Einstellungen!
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="info-box info-box-warning" style="margin-top: 20px;">
+                                <i class="fas fa-shield-alt"></i>
+                                <div>
+                                    <strong>Sicherheitshinweis:</strong> Backups enthalten sensible Server-Daten. 
+                                    Teile diese Dateien nicht mit Unbekannten.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Export/Import -->
+                        <div class="settings-section" style="margin-top: 30px;">
+                            <h2><i class="fas fa-file-export"></i> Daten Export</h2>
+                            <p class="section-description">Exportiere bestimmte Daten in verschiedenen Formaten.</p>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px;">
+                                <button onclick="exportData('tickets')" class="btn" style="background: white; border: 2px solid #5865F2; color: #5865F2; padding: 15px;">
+                                    <i class="fas fa-ticket-alt"></i><br>
+                                    <strong>Tickets exportieren</strong><br>
+                                    <small><%= stats.totalTickets %> Tickets</small>
+                                </button>
+                                
+                                <button onclick="exportData('users')" class="btn" style="background: white; border: 2px solid #57F287; color: #57F287; padding: 15px;">
+                                    <i class="fas fa-users"></i><br>
+                                    <strong>User-Daten exportieren</strong><br>
+                                    <small>XP & Levels</small>
+                                </button>
+                                
+                                <button onclick="exportData('logs')" class="btn" style="background: white; border: 2px solid #FEE75C; color: #000; padding: 15px;">
+                                    <i class="fas fa-history"></i><br>
+                                    <strong>Logs exportieren</strong><br>
+                                    <small>Moderations-Logs</small>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Server Info -->
+                        <div class="settings-section" style="margin-top: 30px;">
+                            <h2><i class="fas fa-info-circle"></i> Server-Informationen</h2>
+                            
+                            <div style="background: white; padding: 25px; border-radius: 10px; margin-top: 15px;">
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                                    <div>
+                                        <h4 style="color: #6c757d; margin-bottom: 5px;">Server-ID</h4>
+                                        <code style="background: #2C2F33; padding: 8px 12px; border-radius: 4px; color: #FFF; display: block;">
+                                            <%= currentGuild %>
+                                        </code>
+                                    </div>
+                                    <div>
+                                        <h4 style="color: #6c757d; margin-bottom: 5px;">Bot-Status</h4>
+                                        <span style="color: #57F287; font-size: 18px;">
+                                            <i class="fas fa-circle"></i> Online
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h4 style="color: #6c757d; margin-bottom: 5px;">Channels</h4>
+                                        <strong style="font-size: 24px;"><%= channels.length %></strong>
+                                    </div>
+                                    <div>
+                                        <h4 style="color: #6c757d; margin-bottom: 5px;">Rollen</h4>
+                                        <strong style="font-size: 24px;"><%= roles.length %></strong>
+                                    </div>
+                                    <div>
+                                        <h4 style="color: #6c757d; margin-bottom: 5px;">Custom Commands</h4>
+                                        <strong style="font-size: 24px;"><%= customCommands.length %></strong>
+                                    </div>
+                                    <div>
+                                        <h4 style="color: #6c757d; margin-bottom: 5px;">Auto-Rollen</h4>
+                                        <strong style="font-size: 24px;"><%= autoRoles.length %></strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <% } else { %>
+                <div class="welcome-message">
+                    <i class="fas fa-arrow-left"></i>
+                    <h2>Wähle einen Server aus der Liste</h2>
+                    <p>Um mit der Konfiguration zu beginnen, wähle einen Server aus dem Menü links.</p>
+                    <div class="welcome-features">
+                        <div class="welcome-feature">
+                            <i class="fas fa-cog"></i>
+                            <h3>Einfache Konfiguration</h3>
+                            <p>Stelle deinen Bot mit wenigen Klicks ein</p>
+                        </div>
+                        <div class="welcome-feature">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>Statistiken</h3>
+                            <p>Überwache Tickets, Bewerbungen und mehr</p>
+                        </div>
+                        <div class="welcome-feature">
+                            <i class="fas fa-users"></i>
+                            <h3>Team-Management</h3>
+                            <p>Verwalte dein Team mit Rängen</p>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        </main>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 TTH-Bot Dashboard • Made with <i class="fas fa-heart"></i> by Thunderflash007</p>
+        </div>
+    </footer>
+
+    <script>
+        const guildId = '<%= currentGuild %>';
+
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            const tabBtns = document.getElementsByClassName('tab-btn');
+            for (let i = 0; i < tabBtns.length; i++) {
+                tabBtns[i].classList.remove('active');
+            }
+            
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // Test Welcome-Nachricht
+        async function testWelcomeMessage() {
+            const channelId = document.getElementById('welcomeChannel').value;
+            const message = document.getElementById('welcomeMessage').value;
+
+            if (!channelId) {
+                alert('Bitte wähle zuerst einen Channel aus!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/test/welcome', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        guildId,
+                        channelId,
+                        message
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Test-Nachricht wurde gesendet!');
+                } else {
+                    alert('❌ Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler beim Senden: ' + error.message);
+            }
+        }
+
+        // Toggle Schedule Options
+        function toggleScheduleOptions(type) {
+            const timeOpt = document.getElementById('timeOption');
+            const dateOpt = document.getElementById('dateOption');
+            const dayOpt = document.getElementById('dayOption');
+            const intervalOpt = document.getElementById('intervalOption');
+            const cronOpt = document.getElementById('cronOption');
+            
+            // Hide all
+            [timeOpt, dateOpt, dayOpt, intervalOpt, cronOpt].forEach(el => el.style.display = 'none');
+            
+            // Show relevant
+            if (type === 'once') {
+                timeOpt.style.display = 'block';
+                dateOpt.style.display = 'block';
+            } else if (type === 'daily') {
+                timeOpt.style.display = 'block';
+            } else if (type === 'weekly') {
+                timeOpt.style.display = 'block';
+                dayOpt.style.display = 'block';
+            } else if (type === 'interval') {
+                intervalOpt.style.display = 'block';
+            } else if (type === 'cron') {
+                cronOpt.style.display = 'block';
+            }
+        }
+
+        // Toggle Auto-Role Options
+        function toggleAutoRoleOptions(type) {
+            const levelOpt = document.getElementById('levelOption');
+            const timeOpt = document.getElementById('timeThresholdOption');
+            
+            // Hide all
+            [levelOpt, timeOpt].forEach(el => el.style.display = 'none');
+            
+            // Show relevant
+            if (type === 'level') {
+                levelOpt.style.display = 'block';
+            } else if (type === 'time') {
+                timeOpt.style.display = 'block';
+            }
+        }
+
+        // Delete Scheduled Message
+        async function deleteScheduledMessage(id) {
+            if (!confirm('Möchtest du diese geplante Nachricht wirklich löschen?')) return;
+            
+            try {
+                const response = await fetch('/api/automation/scheduled-message/' + id, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('✅ Geplante Nachricht gelöscht!');
+                    location.reload();
+                } else {
+                    alert('❌ Fehler beim Löschen');
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Delete Auto-Role
+        async function deleteAutoRole(id) {
+            if (!confirm('Möchtest du diese Auto-Rolle wirklich löschen?')) return;
+            
+            try {
+                const response = await fetch('/api/automation/auto-role/' + id, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('✅ Auto-Rolle gelöscht!');
+                    location.reload();
+                } else {
+                    alert('❌ Fehler beim Löschen');
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Delete Custom Command
+        async function deleteCustomCommand(id) {
+            if (!confirm('Möchtest du diesen Command wirklich löschen?')) return;
+            
+            try {
+                const response = await fetch('/api/automation/custom-command/' + id, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('✅ Command gelöscht!');
+                    location.reload();
+                } else {
+                    alert('❌ Fehler beim Löschen');
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Create Backup
+        async function createBackup() {
+            try {
+                const response = await fetch(`/api/tools/backup/${guildId}`);
+                const data = await response.json();
+                
+                // Download als JSON
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `backup-${guildId}-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                alert('✅ Backup erfolgreich erstellt und heruntergeladen!');
+            } catch (error) {
+                alert('❌ Fehler beim Erstellen des Backups: ' + error.message);
+            }
+        }
+
+        // Restore Backup
+        async function restoreBackup(event) {
+            event.preventDefault();
+            
+            if (!confirm('⚠️ Dies wird alle aktuellen Einstellungen überschreiben! Fortfahren?')) return;
+            
+            const fileInput = document.getElementById('backupFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Bitte wähle eine Backup-Datei aus!');
+                return;
+            }
+            
+            try {
+                const content = await file.text();
+                const backupData = JSON.parse(content);
+                
+                const response = await fetch(`/api/tools/restore/${guildId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(backupData)
+                });
+                
+                if (response.ok) {
+                    alert('✅ Backup erfolgreich wiederhergestellt!');
+                    location.reload();
+                } else {
+                    alert('❌ Fehler beim Wiederherstellen');
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Export Data
+        async function exportData(type) {
+            try {
+                const response = await fetch(`/api/tools/export/${guildId}/${type}`);
+                const data = await response.json();
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${type}-export-${guildId}-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                alert(`✅ ${type} erfolgreich exportiert!`);
+            } catch (error) {
+                alert('❌ Fehler beim Export: ' + error.message);
+            }
+        }
+
+        // Send Announcement
+        async function sendAnnouncement(event) {
+            event.preventDefault();
+            
+            if (!confirm('Möchtest du diese Ankündigung wirklich senden?')) return;
+            
+            const form = event.target;
+            const channelSelect = form.querySelector('[name="channels"]');
+            const selectedChannels = Array.from(channelSelect.selectedOptions).map(opt => opt.value);
+            
+            try {
+                const response = await fetch('/api/automation/announcement', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        guildId,
+                        channels: selectedChannels,
+                        title: form.title.value,
+                        message: form.message.value,
+                        mention: form.mention.value,
+                        useEmbed: form.useEmbed.checked
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert(`✅ Ankündigung wurde in ${selectedChannels.length} Channel(s) gesendet!`);
+                    form.reset();
+                } else {
+                    alert('❌ Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Team-Rolle hinzufügen
+        document.getElementById('addTeamRoleForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const roleSelect = document.getElementById('teamRole');
+            const roleName = roleSelect.options[roleSelect.selectedIndex].dataset.name;
+
+            try {
+                const response = await fetch('/api/team/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        guildId: formData.get('guildId'),
+                        roleId: formData.get('roleId'),
+                        roleName: roleName,
+                        rank: formData.get('rank')
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Team-Rolle hinzugefügt!');
+                    location.reload();
+                } else {
+                    alert('❌ Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        });
+
+        // Team-Rolle entfernen
+        async function removeTeamRole(roleId) {
+            if (!confirm('Möchtest du diese Team-Rolle wirklich entfernen?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/team/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        guildId,
+                        roleId
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Team-Rolle entfernt!');
+                    location.reload();
+                } else {
+                    alert('❌ Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

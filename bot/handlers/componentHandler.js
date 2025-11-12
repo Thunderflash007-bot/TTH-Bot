@@ -25,4 +25,20 @@ module.exports = (client) => {
             console.log(`✅ Modal geladen: ${modal.id}`);
         }
     }
+
+    // SelectMenus laden
+    const selectMenuPath = path.join(__dirname, '../components/selectmenus');
+    if (fs.existsSync(selectMenuPath)) {
+        const selectMenuFiles = fs.readdirSync(selectMenuPath)
+            .filter(file => file.endsWith('.js'));
+
+        for (const file of selectMenuFiles) {
+            const selectMenu = require(`../components/selectmenus/${file}`);
+            if (selectMenu.id && selectMenu.execute) {
+                if (!client.selectMenus) client.selectMenus = new Map();
+                client.selectMenus.set(selectMenu.id, selectMenu);
+                console.log(`✅ SelectMenu geladen: ${selectMenu.id}`);
+            }
+        }
+    }
 };

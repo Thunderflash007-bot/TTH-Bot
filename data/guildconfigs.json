@@ -3,9 +3,33 @@
     "_id": "1762787124688mrvrkf0ct",
     "guildId": "1428104425934688349",
     "prefix": "!",
-    "ticketCategoryId": null,
-    "applicationChannelId": null,
+    "ticketCategoryId": "1428104747998646464",
+    "applicationChannelId": "1428104426924806146",
     "welcomeChannelId": "1428104426924806146",
+    "welcomeMessage": null,
+    "leaveChannelId": null,
+    "leaveMessage": null,
+    "logChannelId": "1428106605903220891",
+    "muteRoleId": null,
+    "levelUpMessage": true,
+    "levelUpChannelId": "1428106605903220891",
+    "createdAt": "2025-11-10T15:05:24.688Z",
+    "teamRoles": [
+      {
+        "roleId": "1428104839933591593",
+        "rank": "owner"
+      }
+    ],
+    "supportRoleId": "1428104951988617388"
+  },
+  {
+    "_id": "1762930652816337wrc0ml",
+    "guildId": "1371917955922657463",
+    "prefix": "!",
+    "ticketCategoryId": null,
+    "supportRoleId": null,
+    "applicationChannelId": null,
+    "welcomeChannelId": null,
     "welcomeMessage": null,
     "leaveChannelId": null,
     "leaveMessage": null,
@@ -13,6 +37,25 @@
     "muteRoleId": null,
     "levelUpMessage": true,
     "levelUpChannelId": null,
-    "createdAt": "2025-11-10T15:05:24.688Z"
+    "teamRoles": [],
+    "createdAt": "2025-11-12T06:57:32.816Z"
+  },
+  {
+    "_id": "1762933744986ersiyv7kh",
+    "guildId": "1299742819358867526",
+    "prefix": "!",
+    "ticketCategoryId": null,
+    "supportRoleId": null,
+    "applicationChannelId": null,
+    "welcomeChannelId": null,
+    "welcomeMessage": null,
+    "leaveChannelId": null,
+    "leaveMessage": null,
+    "logChannelId": null,
+    "muteRoleId": null,
+    "levelUpMessage": true,
+    "levelUpChannelId": null,
+    "teamRoles": [],
+    "createdAt": "2025-11-12T07:49:04.986Z"
   }
 ]

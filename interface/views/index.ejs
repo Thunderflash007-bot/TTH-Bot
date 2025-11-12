@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTH-Bot Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-robot"></i>
+                <span>TTH-Bot</span>
+            </div>
+            <div class="nav-links">
+                <% if (user) { %>
+                    <a href="/dashboard" class="btn btn-primary">Dashboard</a>
+                    <a href="/auth/logout" class="btn btn-secondary">Logout</a>
+                <% } else { %>
+                    <a href="/auth/discord" class="btn btn-primary">
+                        <i class="fab fa-discord"></i> Login mit Discord
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <h1><i class="fas fa-robot"></i> Willkommen beim TTH-Bot</h1>
+            <p class="subtitle">Dein All-in-One Discord Bot für Moderation, Tickets und mehr!</p>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Moderation</h3>
+                    <p>Leistungsstarke Moderationstools mit Logging</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-ticket-alt"></i>
+                    <h3>Ticket-System</h3>
+                    <p>Professionelles Support-Ticket-System</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Level-System</h3>
+                    <p>Motiviere deine Community mit XP & Leveln</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-users"></i>
+                    <h3>Willkommenssystem</h3>
+                    <p>Begrüße neue Mitglieder automatisch</p>
+                </div>
+            </div>
+
+            <% if (!user) { %>
+                <a href="/auth/discord" class="btn btn-large btn-discord">
+                    <i class="fab fa-discord"></i> Jetzt mit Discord verbinden
+                </a>
+            <% } %>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 TTH-Bot. Made with <i class="fas fa-heart"></i></p>
+        </div>
+    </footer>
+</body>
+</html>

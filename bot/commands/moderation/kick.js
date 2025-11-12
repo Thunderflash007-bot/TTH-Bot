@@ -29,6 +29,24 @@ module.exports = {
         }
 
         try {
+            // Versuche dem User eine DM zu senden
+            try {
+                const dmEmbed = new EmbedBuilder()
+                    .setColor('#FEE75C')
+                    .setTitle('👢 Du wurdest gekickt')
+                    .setDescription(`Du wurdest von **${interaction.guild.name}** gekickt.\n\nDu kannst aber mit einem neuen Invite-Link wieder beitreten!`)
+                    .addFields(
+                        { name: '📋 Grund', value: reason, inline: false },
+                        { name: '👮 Moderator', value: interaction.user.tag, inline: false }
+                    )
+                    .setThumbnail(interaction.guild.iconURL())
+                    .setTimestamp();
+                
+                await target.send({ embeds: [dmEmbed] });
+            } catch (err) {
+                // User hat DMs deaktiviert
+            }
+
             await member.kick(reason);
 
             await ModerationLog.save({
@@ -41,18 +59,24 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#FEE75C')
-                .setTitle('👢 User gekickt')
+                .setAuthor({ 
+                    name: 'Moderation: User gekickt',
+                    iconURL: interaction.guild.iconURL()
+                })
+                .setThumbnail(target.displayAvatarURL({ size: 256 }))
                 .addFields(
-                    { name: 'User', value: `${target.tag}`, inline: true },
-                    { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
-                    { name: 'Grund', value: reason }
+                    { name: '👤 Betroffener User', value: `${target} (${target.tag})\n\`${target.id}\``, inline: true },
+                    { name: '👮 Moderator', value: `${interaction.user}\n${interaction.user.tag}`, inline: true },
+                    { name: '📋 Grund', value: `\`\`\`${reason}\`\`\``, inline: false },
+                    { name: '⏰ Zeitpunkt', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: false }
                 )
+                .setFooter({ text: `Case ID: ${Date.now()}` })
                 .setTimestamp();
 
             await interaction.reply({ embeds: [embed] });
         } catch (error) {
             console.error(error);
-            await interaction.reply({ content: '❌ Fehler beim Kicken!', ephemeral: true });
+            await interaction.reply({ content: '❌ Fehler beim Kicken des Users!', ephemeral: true });
         }
     }
 };

@@ -23,21 +23,26 @@ app.use(session({
 }));
 
 // Passport Discord OAuth
-passport.use(new DiscordStrategy({
-    clientID: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: process.env.OAUTH_CALLBACK_URL,
-    scope: ['identify', 'guilds']
-}, (accessToken, refreshToken, profile, done) => {
-    profile.accessToken = accessToken;
-    return done(null, profile);
-}));
+if (process.env.CLIENT_SECRET && process.env.CLIENT_SECRET.trim() !== '') {
+    passport.use(new DiscordStrategy({
+        clientID: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        callbackURL: process.env.OAUTH_CALLBACK_URL,
+        scope: ['identify', 'guilds']
+    }, (accessToken, refreshToken, profile, done) => {
+        profile.accessToken = accessToken;
+        return done(null, profile);
+    }));
 
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj, done) => done(null, obj));
+    passport.serializeUser((user, done) => done(null, user));
+    passport.deserializeUser((obj, done) => done(null, obj));
 
-app.use(passport.initialize());
-app.use(passport.session());
+    app.use(passport.initialize());
+    app.use(passport.session());
+} else {
+    console.warn('⚠️ CLIENT_SECRET nicht konfiguriert! Discord OAuth ist deaktiviert.');
+    console.warn('📖 Siehe SETUP_GUIDE.md für Anweisungen.');
+}
 
 // Routes
 app.use('/', require('./routes/index'));

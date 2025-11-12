@@ -1,8 +1,8 @@
 const Database = require('../utils/database');
 
-class Ticket {
+class ScheduledMessage {
     constructor() {
-        this.db = new Database('tickets');
+        this.db = new Database('scheduledmessages');
     }
 
     findOne(query) {
@@ -19,18 +19,18 @@ class Ticket {
         }
         return this.db.insert({
             ...data,
-            type: data.type || 'support',
-            status: data.status || 'open'
+            createdAt: new Date(),
+            enabled: data.enabled !== false
         });
+    }
+
+    delete(query) {
+        return this.db.deleteOne(query);
     }
 
     countDocuments(query) {
         return this.db.count(query);
     }
-
-    findSorted(query, limit) {
-        return this.db.findSorted(query, 'createdAt', limit);
-    }
 }
 
-module.exports = new Ticket();
+module.exports = new ScheduledMessage();

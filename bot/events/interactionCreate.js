@@ -21,13 +21,24 @@ module.exports = {
 
         // Buttons
         if (interaction.isButton()) {
-            const buttonId = interaction.customId.split('_')[0];
-            const button = client.buttons.get(buttonId);
+            // Versuche zuerst die volle customId, dann nur den ersten Teil
+            let button = client.buttons.get(interaction.customId);
+            if (!button) {
+                const buttonId = interaction.customId.split('_')[0];
+                button = client.buttons.get(buttonId);
+            }
+            
             if (button) {
                 try {
                     await button.execute(interaction, client);
                 } catch (error) {
                     console.error(error);
+                    const errorMessage = { content: '❌ Es gab einen Fehler!', ephemeral: true };
+                    if (interaction.replied || interaction.deferred) {
+                        await interaction.followUp(errorMessage);
+                    } else {
+                        await interaction.reply(errorMessage);
+                    }
                 }
             }
         }
@@ -39,6 +50,18 @@ module.exports = {
             if (modal) {
                 try {
                     await modal.execute(interaction, client);
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        }
+
+        // Select Menus
+        if (interaction.isStringSelectMenu() || interaction.isUserSelectMenu()) {
+            const selectMenu = client.selectMenus.get(interaction.customId);
+            if (selectMenu) {
+                try {
+                    await selectMenu.execute(interaction, client);
                 } catch (error) {
                     console.error(error);
                 }

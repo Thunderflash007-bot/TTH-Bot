@@ -5,7 +5,7 @@ class GuildConfig {
         this.db = new Database('guildconfigs');
     }
 
-    async findOne(query) {
+    findOne(query) {
         let config = this.db.findOne(query);
         if (!config && query.guildId) {
             config = this.create(query.guildId);
@@ -18,6 +18,7 @@ class GuildConfig {
             guildId,
             prefix: '!',
             ticketCategoryId: null,
+            supportRoleId: null,
             applicationChannelId: null,
             welcomeChannelId: null,
             welcomeMessage: null,
@@ -26,12 +27,13 @@ class GuildConfig {
             logChannelId: null,
             muteRoleId: null,
             levelUpMessage: true,
-            levelUpChannelId: null
+            levelUpChannelId: null,
+            teamRoles: []
         };
         return this.db.insert(defaultConfig);
     }
 
-    async save(config) {
+    save(config) {
         if (config._id) {
             return this.db.updateOne({ _id: config._id }, config);
         }

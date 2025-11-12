@@ -29,6 +29,24 @@ module.exports = {
         }
 
         try {
+            // Versuche dem User eine DM zu senden
+            try {
+                const dmEmbed = new EmbedBuilder()
+                    .setColor('#ED4245')
+                    .setTitle('🔨 Du wurdest gebannt')
+                    .setDescription(`Du wurdest von **${interaction.guild.name}** gebannt.`)
+                    .addFields(
+                        { name: '📋 Grund', value: reason, inline: false },
+                        { name: '👮 Moderator', value: interaction.user.tag, inline: false }
+                    )
+                    .setThumbnail(interaction.guild.iconURL())
+                    .setTimestamp();
+                
+                await target.send({ embeds: [dmEmbed] });
+            } catch (err) {
+                // User hat DMs deaktiviert
+            }
+
             await member.ban({ reason });
 
             await ModerationLog.save({
@@ -41,18 +59,24 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#ED4245')
-                .setTitle('🔨 User gebannt')
+                .setAuthor({ 
+                    name: 'Moderation: User gebannt',
+                    iconURL: interaction.guild.iconURL()
+                })
+                .setThumbnail(target.displayAvatarURL({ size: 256 }))
                 .addFields(
-                    { name: 'User', value: `${target.tag}`, inline: true },
-                    { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
-                    { name: 'Grund', value: reason }
+                    { name: '👤 Betroffener User', value: `${target} (${target.tag})\n\`${target.id}\``, inline: true },
+                    { name: '👮 Moderator', value: `${interaction.user}\n${interaction.user.tag}`, inline: true },
+                    { name: '📋 Grund', value: `\`\`\`${reason}\`\`\``, inline: false },
+                    { name: '⏰ Zeitpunkt', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: false }
                 )
+                .setFooter({ text: `Case ID: ${Date.now()}` })
                 .setTimestamp();
 
             await interaction.reply({ embeds: [embed] });
         } catch (error) {
             console.error(error);
-            await interaction.reply({ content: '❌ Fehler beim Bannen!', ephemeral: true });
+            await interaction.reply({ content: '❌ Fehler beim Bannen des Users!', ephemeral: true });
         }
     }
 };

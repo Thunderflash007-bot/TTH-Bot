@@ -1,23 +1,37 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const Ticket = require('../../models/Ticket');
+const GuildConfig = require('../../models/GuildConfig');
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('close')
-        .setDescription('Schließt das aktuelle Ticket')
-        .addStringOption(option =>
-            option.setName('grund')
-                .setDescription('Grund für das Schließen')
-                .setRequired(false)),
-    
+    id: 'ticket_close',
     async execute(interaction) {
-        const ticket = await Ticket.findOne({ channelId: interaction.channel.id, status: 'open' });
+        console.log('ticket_close button clicked');
+        const ticket = await Ticket.findOne({ 
+            channelId: interaction.channel.id, 
+            status: 'open' 
+        });
         
         if (!ticket) {
-            return interaction.reply({ content: '❌ Dies ist kein offenes Ticket!', ephemeral: true });
+            return interaction.reply({ 
+                content: '❌ Dies ist kein offenes Ticket!', 
+                ephemeral: true 
+            });
         }
 
-        const reason = interaction.options.getString('grund') || 'Kein Grund angegeben';
+        const config = await GuildConfig.findOne({ guildId: interaction.guild.id });
+        
+        // Prüfe ob User berechtigt ist
+        const isCreator = interaction.user.id === ticket.userId;
+        const hasManageChannels = interaction.member.permissions.has(PermissionFlagsBits.ManageChannels);
+        const hasSupportRole = config?.supportRoleId && 
+            interaction.member.roles.cache.has(config.supportRoleId);
+
+        if (!isCreator && !hasManageChannels && !hasSupportRole) {
+            return interaction.reply({ 
+                content: '❌ Du hast keine Berechtigung dieses Ticket zu schließen!', 
+                ephemeral: true 
+            });
+        }
 
         ticket.status = 'closed';
         ticket.closedBy = interaction.user.id;
@@ -35,33 +49,21 @@ module.exports = {
             .setDescription('📝 **Dieses Ticket wurde geschlossen**\n\nDer Channel wird in 10 Sekunden gelöscht.')
             .addFields(
                 { name: '👤 Geschlossen von', value: `${interaction.user}`, inline: true },
-                { name: '📋 Grund', value: `\`\`\`${reason}\`\`\``, inline: false },
                 { name: '⏰ Geschlossen am', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: false }
             )
             .setFooter({ text: `Ticket von ${ticketUser?.user.tag || 'Unbekannt'}` })
             .setTimestamp();
 
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('ticket_reopen')
-                    .setLabel('Ticket wiedereröffnen')
-                    .setEmoji('🔓')
-                    .setStyle(ButtonStyle.Success)
-                    .setDisabled(false)
-            );
-
-        await interaction.reply({ embeds: [embed], components: [row] });
+        await interaction.update({ embeds: [embed], components: [] });
 
         // Sende DM an Ticket-Ersteller
-        if (ticketUser) {
+        if (ticketUser && ticketUser.id !== interaction.user.id) {
             try {
                 const dmEmbed = new EmbedBuilder()
                     .setColor('#ED4245')
                     .setTitle('🔒 Dein Ticket wurde geschlossen')
                     .setDescription(`Dein Ticket auf **${interaction.guild.name}** wurde geschlossen.`)
                     .addFields(
-                        { name: '📋 Grund', value: reason, inline: false },
                         { name: '👮 Geschlossen von', value: interaction.user.tag, inline: false }
                     )
                     .setTimestamp();

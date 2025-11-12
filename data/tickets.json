@@ -8,6 +8,57 @@
     "status": "closed",
     "createdAt": "2025-11-10T15:05:24.941Z",
     "closedBy": "901518853635444746",
-    "closedAt": "2025-11-10T15:05:47.452Z"
+    "closedAt": "2025-11-10T15:05:47.452Z",
+    "userName": "thunderflash.0.0.7"
+  },
+  {
+    "_id": "1762873177552q6pqxhtgy",
+    "guildId": "1428104425934688349",
+    "userId": "901518853635444746",
+    "channelId": "1437819060539752656",
+    "type": "support",
+    "status": "closed",
+    "createdAt": "2025-11-11T14:59:37.552Z",
+    "closedBy": "901518853635444746",
+    "closedAt": "2025-11-11T15:00:02.140Z",
+    "userName": "thunderflash.0.0.7"
+  },
+  {
+    "_id": "17628735932881jiqhnsk9",
+    "guildId": "1428104425934688349",
+    "userId": "901518853635444746",
+    "channelId": "1437820804166586378",
+    "type": "support",
+    "status": "closed",
+    "createdAt": "2025-11-11T15:06:33.288Z",
+    "closedBy": "901518853635444746",
+    "closedAt": "2025-11-11T15:07:51.322Z",
+    "userName": "thunderflash.0.0.7"
+  },
+  {
+    "_id": "17629299956791eamee9vr",
+    "guildId": "1428104425934688349",
+    "userId": "901518853635444746",
+    "channelId": "1438057372739436648",
+    "type": "support",
+    "status": "closed",
+    "createdAt": "2025-11-12T06:46:35.679Z",
+    "closedBy": "901518853635444746",
+    "closedAt": "2025-11-12T06:47:03.924Z",
+    "userName": "thunderflash.0.0.7"
+  },
+  {
+    "_id": "17629419128603whlrtwkh",
+    "guildId": "1428104425934688349",
+    "userId": "901518853635444746",
+    "channelId": "1438107356767588394",
+    "type": "support",
+    "status": "closed",
+    "createdAt": "2025-11-12T10:05:12.860Z",
+    "userName": "thunderflash.0.0.7",
+    "claimedBy": "928901974106202113",
+    "claimedAt": "2025-11-12T10:06:00.273Z",
+    "closedBy": "901518853635444746",
+    "closedAt": "2025-11-12T10:06:06.435Z"
   }
 ]
