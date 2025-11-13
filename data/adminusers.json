@@ -1,0 +1,29 @@
+[
+  {
+    "userId": "901518853635444746",
+    "username": "thunderflash.0.0.7",
+    "addedAt": "System",
+    "isMainAdmin": true,
+    "permissions": {
+      "viewAdminPanel": true,
+      "viewBotStatus": true,
+      "restartBot": true,
+      "manageCommands": true,
+      "viewLogs": true,
+      "toggleMaintenance": true,
+      "toggleFeatures": true,
+      "manageBypass": true,
+      "searchUsers": true,
+      "viewUserStats": true,
+      "createBackup": true,
+      "viewBackups": true,
+      "cleanupDatabase": true,
+      "sendAnnouncements": true,
+      "sendBroadcast": true,
+      "viewBugReports": true,
+      "manageBugReports": true,
+      "viewGlobalStats": true,
+      "viewServerList": true
+    }
+  }
+]

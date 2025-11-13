@@ -4,8 +4,15 @@ const session = require('express-session');
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const path = require('path');
+const http = require('http');
+const socketIO = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server);
+
+// Socket.IO verfügbar machen
+app.set('io', io);
 
 // Middleware
 app.use(express.json());
@@ -53,8 +60,24 @@ app.use('/admin', require('./routes/admin'));
 
 console.log('✅ JSON-Datenbank (Interface) initialisiert');
 
+// Socket.IO - Wartungsmodus Live-Updates
+io.on('connection', (socket) => {
+    console.log('📡 Client connected:', socket.id);
+    
+    socket.on('disconnect', () => {
+        console.log('📡 Client disconnected:', socket.id);
+    });
+});
+
+// Global Event Emitter für Wartungsmodus
+global.notifyMaintenanceMode = (enabled) => {
+    console.log('🔔 Broadcasting maintenance mode change:', enabled);
+    io.emit('maintenance-mode-changed', { enabled });
+};
+
 // Server starten
 const PORT = process.env.WEB_PORT || 8080;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`✅ Web-Interface läuft auf http://localhost:${PORT}`);
+    console.log('📡 Socket.IO aktiviert für Live-Updates');
 });

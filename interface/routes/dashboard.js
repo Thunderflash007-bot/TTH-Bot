@@ -4,6 +4,7 @@ const path = require('path');
 const GuildConfig = require(path.join(__dirname, '../../bot/models/GuildConfig'));
 const Ticket = require(path.join(__dirname, '../../bot/models/Ticket'));
 const Application = require(path.join(__dirname, '../../bot/models/Application'));
+const AdminUser = require(path.join(__dirname, '../../bot/models/AdminUser'));
 const botClient = require('../utils/botClient');
 const { checkDashboardAccess } = require(path.join(__dirname, '../../bot/middleware/featureCheck'));
 
@@ -37,9 +38,34 @@ function maintenanceCheck(req, res, next) {
 // Dashboard Hauptseite (ohne spezifischen Server)
 router.get('/', isAuthenticated, maintenanceCheck, async (req, res) => {
     try {
-        const guilds = req.user.guilds.filter(guild => 
+        // Hole Bot Client
+        const client = botClient.getClient();
+        let botGuildIds = [];
+        
+        if (client && client.guilds) {
+            // Sammle alle Guild IDs auf denen der Bot ist
+            botGuildIds = Array.from(client.guilds.cache.keys());
+            console.log(`🤖 Bot ist auf ${botGuildIds.length} Servern`);
+        } else {
+            console.warn('⚠️ Bot Client nicht verfügbar - zeige alle Server');
+        }
+        
+        // Filtere Guilds: User muss Admin sein UND Bot muss auf dem Server sein
+        const userGuilds = req.user.guilds.filter(guild => 
             (guild.permissions & 0x20) === 0x20
         );
+        
+        const guilds = botGuildIds.length > 0 
+            ? userGuilds.filter(guild => botGuildIds.includes(guild.id))
+            : userGuilds;
+        
+        console.log(`👤 User ${req.user.username}: ${userGuilds.length} Server mit Admin-Rechten, ${guilds.length} davon mit Bot`);
+        
+        // Admin-Check für Navigation
+        const isMainAdmin = req.user.id === '901518853635444746';
+        const adminUser = AdminUser.findOne({ userId: req.user.id });
+        const canViewAdminPanel = isMainAdmin || (adminUser && adminUser.permissions.viewAdminPanel);
+        
         res.render('dashboard', { 
             user: req.user, 
             guilds, 
@@ -59,7 +85,9 @@ router.get('/', isAuthenticated, maintenanceCheck, async (req, res) => {
             categories: [],
             scheduledMessages: [],
             autoRoles: [],
-            customCommands: []
+            customCommands: [],
+            isMainAdmin: isMainAdmin,
+            canViewAdminPanel: canViewAdminPanel
         });
     } catch (error) {
         console.error(error);
@@ -160,13 +188,37 @@ router.post('/report-bug', isAuthenticated, async (req, res) => {
 router.get('/:id', isAuthenticated, maintenanceCheck, async (req, res) => {
     try {
         const guildId = req.params.id;
-        const guilds = req.user.guilds.filter(guild => 
+        
+        // Hole Bot Client
+        const client = botClient.getClient();
+        let botGuildIds = [];
+        
+        if (client && client.guilds) {
+            botGuildIds = Array.from(client.guilds.cache.keys());
+        }
+        
+        // Filtere Guilds: User muss Admin sein UND Bot muss auf dem Server sein
+        const userGuilds = req.user.guilds.filter(guild => 
             (guild.permissions & 0x20) === 0x20
         );
+        
+        const guilds = botGuildIds.length > 0 
+            ? userGuilds.filter(guild => botGuildIds.includes(guild.id))
+            : userGuilds;
+        
         const guild = req.user.guilds.find(g => g.id === guildId);
         
         if (!guild || (guild.permissions & 0x20) !== 0x20) {
             return res.status(403).send('Keine Berechtigung für diesen Server');
+        }
+        
+        // Prüfe ob Bot auf dem Server ist
+        if (botGuildIds.length > 0 && !botGuildIds.includes(guildId)) {
+            return res.status(404).render('access-denied', {
+                user: req.user,
+                message: 'Der Bot ist nicht auf diesem Server. Bitte lade den Bot zuerst ein!',
+                inviteLink: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID || 'YOUR_BOT_ID'}&permissions=8&scope=bot%20applications.commands`
+            });
         }
 
         const config = GuildConfig.findOne({ guildId }) || {};
@@ -216,6 +268,11 @@ router.get('/:id', isAuthenticated, maintenanceCheck, async (req, res) => {
         const CustomCommand = require(path.join(__dirname, '../../bot/models/CustomCommand'));
         const customCommands = CustomCommand.find({ guildId }) || [];
 
+        // Admin-Check für Navigation
+        const isMainAdmin = req.user.id === '901518853635444746';
+        const adminUser = AdminUser.findOne({ userId: req.user.id });
+        const canViewAdminPanel = isMainAdmin || (adminUser && adminUser.permissions.viewAdminPanel);
+
         res.render('dashboard', { 
             user: req.user, 
             guilds,
@@ -230,7 +287,9 @@ router.get('/:id', isAuthenticated, maintenanceCheck, async (req, res) => {
             categories: guildData.categories,
             scheduledMessages,
             autoRoles,
-            customCommands
+            customCommands,
+            isMainAdmin: isMainAdmin,
+            canViewAdminPanel: canViewAdminPanel
         });
     } catch (error) {
         console.error(error);

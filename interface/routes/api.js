@@ -426,14 +426,14 @@ router.post('/automation/custom-command', isAuthenticated, async (req, res) => {
             useEmbed: req.body.useEmbed === 'true',
             embedColor: req.body.embedColor || '#5865F2',
             deleteInvoke: req.body.deleteInvoke === 'true',
-            enabled: req.body.enabled === 'true',
+            enabled: req.body.enabled !== undefined ? req.body.enabled === 'true' : true,
             createdBy: req.user.id
         };
 
         CustomCommand.save(commandData);
         res.redirect(`/dashboard/${guildId}#automation`);
     } catch (error) {
-        console.error(error);
+        console.error('❌ Custom Command Error:', error);
         res.status(500).send('Fehler beim Erstellen: ' + error.message);
     }
 });

@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Control Panel - TTH-Bot</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         .admin-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -269,6 +271,142 @@
             </div>
         </div>
 
+        <% if (isMainAdmin) { %>
+        <!-- Admin User Verwaltung (nur für Haupt-Admin) -->
+        <div class="admin-card" style="border: 3px solid #5865F2;">
+            <h2><i class="fas fa-user-shield"></i> Admin-User Verwaltung</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                <i class="fas fa-crown" style="color: #5865F2;"></i>
+                <strong>Haupt-Admin Bereich:</strong> Hier kannst du weitere Admins hinzufügen und deren Berechtigungen verwalten.
+            </p>
+
+            <!-- Admin hinzufügen -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 15px 0; color: #2C2F33;">
+                    <i class="fas fa-user-plus"></i> Neuen Admin hinzufügen
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="newAdminUserId" class="form-control" placeholder="User-ID eingeben" onkeypress="if(event.key==='Enter') addAdminUser()">
+                    <input type="text" id="newAdminUsername" class="form-control" placeholder="Username (optional)">
+                    <button onclick="addAdminUser()" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Hinzufügen
+                    </button>
+                </div>
+                <small style="color: #6c757d;">
+                    <i class="fas fa-info-circle"></i> Rechtsklick auf User in Discord → "Nutzer-ID kopieren"
+                </small>
+            </div>
+
+            <!-- Admin-User Liste -->
+            <div id="adminUsersList">
+                <% if (adminUsers && adminUsers.length > 0) { %>
+                    <div style="display: grid; gap: 15px;">
+                        <% adminUsers.forEach(admin => { %>
+                            <div style="background: <%= admin.isMainAdmin ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white' %>; border-radius: 10px; padding: 20px; border-left: 4px solid <%= admin.isMainAdmin ? '#FFD700' : '#5865F2' %>; <%= admin.isMainAdmin ? 'color: white;' : '' %>">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <h3 style="margin: 0 0 5px 0; <%= admin.isMainAdmin ? 'color: white;' : 'color: #2C2F33;' %>">
+                                            <% if (admin.isMainAdmin) { %>
+                                                <i class="fas fa-crown" style="color: #FFD700;"></i> <%= admin.username || 'Haupt-Admin' %>
+                                                <span style="background: rgba(255, 215, 0, 0.2); color: #FFD700; padding: 3px 10px; border-radius: 5px; font-size: 12px; margin-left: 10px; font-weight: 600;">
+                                                    HAUPT-ADMIN
+                                                </span>
+                                            <% } else { %>
+                                                <i class="fas fa-user"></i> <%= admin.username || 'Admin User' %>
+                                            <% } %>
+                                        </h3>
+                                        <p style="font-family: monospace; <%= admin.isMainAdmin ? 'color: rgba(255, 255, 255, 0.8);' : 'color: #6c757d;' %> margin: 0 0 10px 0;"><%= admin.userId %></p>
+                                        <small style="<%= admin.isMainAdmin ? 'color: rgba(255, 255, 255, 0.7);' : 'color: #6c757d;' %>">
+                                            <% if (admin.isMainAdmin) { %>
+                                                <i class="fas fa-shield-alt"></i> System-Administrator (Vollzugriff)
+                                            <% } else { %>
+                                                <i class="fas fa-calendar-plus"></i> Hinzugefügt: <%= new Date(admin.addedAt).toLocaleString('de-DE') %>
+                                            <% } %>
+                                        </small>
+                                    </div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <% if (!admin.isMainAdmin) { %>
+                                            <button onclick="editAdminPermissions('<%= admin.userId %>')" class="btn btn-sm" style="background: #5865F2; color: white; padding: 8px 16px;">
+                                                <i class="fas fa-key"></i> Berechtigungen
+                                            </button>
+                                            <button onclick="removeAdminUser('<%= admin.userId %>')" class="btn btn-sm" style="background: #ED4245; color: white; padding: 8px 16px;">
+                                                <i class="fas fa-trash"></i> Entfernen
+                                            </button>
+                                        <% } else { %>
+                                            <button class="btn btn-sm" style="background: rgba(255, 255, 255, 0.2); color: white; padding: 8px 16px; cursor: not-allowed;" disabled title="Haupt-Admin kann nicht bearbeitet werden">
+                                                <i class="fas fa-lock"></i> Geschützt
+                                            </button>
+                                        <% } %>
+                                    </div>
+                                </div>
+
+                                <!-- Berechtigungen Übersicht -->
+                                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid <%= admin.isMainAdmin ? 'rgba(255, 255, 255, 0.2)' : '#f0f0f0' %>;">
+                                    <strong style="<%= admin.isMainAdmin ? 'color: white;' : 'color: #5865F2;' %> display: block; margin-bottom: 10px;">
+                                        <i class="fas fa-shield-alt"></i> <%= admin.isMainAdmin ? 'Alle Berechtigungen' : 'Aktive Berechtigungen' %>:
+                                    </strong>
+                                    <% if (admin.isMainAdmin) { %>
+                                        <div style="background: rgba(255, 215, 0, 0.2); color: white; padding: 12px; border-radius: 8px; text-align: center;">
+                                            <i class="fas fa-infinity"></i> <strong>Unbegrenzte Rechte</strong> - Vollzugriff auf alle Funktionen
+                                        </div>
+                                    <% } else { %>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                            <% 
+                                            const permNames = {
+                                                viewAdminPanel: 'Admin-Panel',
+                                                viewBotStatus: 'Bot-Status',
+                                                restartBot: 'Bot Neustarten',
+                                                manageCommands: 'Commands',
+                                                viewLogs: 'Logs',
+                                                toggleMaintenance: 'Wartungsmodus',
+                                                toggleFeatures: 'Features',
+                                                manageBypass: 'Bypass-Verwaltung',
+                                                searchUsers: 'User Suche',
+                                                viewUserStats: 'User-Stats',
+                                                createBackup: 'Backup',
+                                                viewBackups: 'Backups Anzeigen',
+                                                cleanupDatabase: 'DB Bereinigung',
+                                                sendAnnouncements: 'Ankündigungen',
+                                                sendBroadcast: 'Broadcast',
+                                                viewBugReports: 'Bug Reports',
+                                                manageBugReports: 'Bug-Verwaltung',
+                                                viewGlobalStats: 'Statistiken',
+                                                viewServerList: 'Server-Liste'
+                                            };
+                                            Object.entries(admin.permissions).forEach(([key, value]) => {
+                                                if (value) {
+                                            %>
+                                            <span style="background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 6px; font-size: 13px; font-weight: 500;">
+                                                <i class="fas fa-check"></i> <%= permNames[key] || key %>
+                                            </span>
+                                            <% 
+                                                }
+                                            });
+                                            %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div style="text-align: center; padding: 40px; color: #6c757d; background: #f8f9fa; border-radius: 10px;">
+                        <i class="fas fa-users-slash" style="font-size: 48px; opacity: 0.3;"></i>
+                        <p style="margin-top: 15px;">Noch keine Admin-User hinzugefügt</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+        <% } %>
+
+        <% 
+        // Helper-Funktion für Berechtigungsprüfung
+        function hasPermission(perm) {
+            return isMainAdmin || (permissions && permissions[perm]);
+        }
+        %>
+
+        <% if (hasPermission('toggleMaintenance') || hasPermission('toggleFeatures')) { %>
         <!-- Wartungsmodus & Feature Control -->
         <div class="admin-card" style="border: 3px solid #ED4245;">
             <h2><i class="fas fa-shield-alt"></i> Globale Systemsteuerung</h2>
@@ -367,7 +505,9 @@
                 </div>
             </div>
         </div>
+        <% } %>
 
+        <% if (hasPermission('viewBugReports')) { %>
         <!-- Bug Reports -->
         <div class="admin-card">
             <h2><i class="fas fa-bug"></i> Bug Reports</h2>
@@ -403,7 +543,9 @@
                 </div>
             </div>
         </div>
+        <% } %>
 
+        <% if (hasPermission('restartBot') || hasPermission('manageCommands') || hasPermission('viewLogs')) { %>
         <!-- Schnelle Bot-Kontrolle -->
         <div class="admin-card">
             <h2><i class="fas fa-robot"></i> Bot Schnellzugriff</h2>
@@ -436,7 +578,9 @@
                 </div>
             </div>
         </div>
+        <% } %>
 
+        <% if (hasPermission('searchUsers')) { %>
         <!-- User Verwaltung -->
         <div class="admin-card">
             <h2><i class="fas fa-users"></i> User Verwaltung</h2>
@@ -454,7 +598,9 @@
             
             <div id="userSearchResults"></div>
         </div>
+        <% } %>
 
+        <% if (hasPermission('viewGlobalStats')) { %>
         <!-- Globale Statistiken -->
         <div class="admin-card">
             <h2><i class="fas fa-chart-bar"></i> Globale Statistiken</h2>
@@ -488,7 +634,9 @@
                 </div>
             </div>
         </div>
+        <% } %>
 
+        <% if (hasPermission('createBackup') || hasPermission('viewBackups') || hasPermission('cleanupDatabase')) { %>
         <!-- Database Management -->
         <div class="admin-card">
             <h2><i class="fas fa-database"></i> Datenbank Verwaltung</h2>
@@ -515,7 +663,9 @@
                 <div id="backupsContent"></div>
             </div>
         </div>
+        <% } %>
 
+        <% if (hasPermission('sendAnnouncements')) { %>
         <!-- Wartungsankündigung -->
         <div class="admin-card">
             <h2><i class="fas fa-tools"></i> Wartungsankündigung</h2>
@@ -573,7 +723,9 @@
 
             <div id="maintenanceResult" style="margin-top: 20px; display: none;"></div>
         </div>
+        <% } %>
 
+        <% if (hasPermission('sendBroadcast')) { %>
         <!-- Global Broadcast -->
         <div class="admin-card">
             <h2><i class="fas fa-bullhorn"></i> Global Broadcast</h2>
@@ -603,7 +755,9 @@
 
             <div id="broadcastResult" style="margin-top: 20px; display: none;"></div>
         </div>
+        <% } %>
 
+        <% if (hasPermission('viewServerList')) { %>
         <!-- Server Liste -->
         <div class="admin-card">
             <h2><i class="fas fa-server"></i> Verbundene Server (<%= botStatus.guilds ? botStatus.guilds.length : 0 %>)</h2>
@@ -623,7 +777,9 @@
                 <% } %>
             </div>
         </div>
+        <% } %>
 
+        <% if (hasPermission('restartBot')) { %>
         <!-- Bot Controls -->
         <div class="admin-card">
             <h2><i class="fas fa-sliders-h"></i> Bot Controls</h2>
@@ -636,7 +792,9 @@
                 </button>
             </div>
         </div>
+        <% } %>
 
+        <% if (hasPermission('toggleFeatures')) { %>
         <!-- Global Feature Toggles -->
         <div class="admin-card">
             <h2><i class="fas fa-toggle-on"></i> Globale Feature-Verwaltung</h2>
@@ -653,9 +811,68 @@
                 </div>
             </div>
         </div>
+        <% } %>
     </div>
 
     <script>
+        // Socket.IO Connection für Live-Updates
+        const socket = io();
+        
+        socket.on('connect', () => {
+            console.log('📡 WebSocket verbunden');
+        });
+        
+        socket.on('disconnect', () => {
+            console.log('📡 WebSocket getrennt');
+        });
+        
+        // Wartungsmodus Live-Update
+        socket.on('maintenance-mode-changed', (data) => {
+            console.log('🔔 Wartungsmodus geändert:', data.enabled);
+            
+            if (data.enabled) {
+                // Zeige Benachrichtigung
+                showMaintenanceNotification();
+                
+                // Lade Seite nach 2 Sekunden neu
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                // Wartung beendet - Seite neu laden
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        });
+        
+        function showMaintenanceNotification() {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #ED4245 0%, #A02729 100%);
+                color: white;
+                padding: 20px 30px;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-tools" style="font-size: 24px;"></i>
+                    <div>
+                        <div style="font-size: 18px; margin-bottom: 5px;">🔧 Wartungsmodus aktiviert</div>
+                        <div style="font-size: 14px; opacity: 0.9;">Seite wird neu geladen...</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+        }
+
         let selectedSeverity = 'info';
 
         // Severity Auswahl
@@ -1764,6 +1981,244 @@
             // Alle 30 Sekunden aktualisieren
             setInterval(loadGlobalStats, 30000);
         });
+
+        // === ADMIN USER MANAGEMENT ===
+
+        // Admin-User hinzufügen
+        async function addAdminUser() {
+            const userIdInput = document.getElementById('newAdminUserId');
+            const usernameInput = document.getElementById('newAdminUsername');
+            const userId = userIdInput.value.trim();
+            const username = usernameInput.value.trim();
+
+            if (!userId) {
+                alert('⚠️ Bitte User-ID eingeben!');
+                return;
+            }
+
+            // Validiere User-ID Format
+            if (!/^\d{17,19}$/.test(userId)) {
+                alert('❌ Ungültige User-ID! Muss 17-19 Ziffern lang sein.');
+                return;
+            }
+
+            // Standard-Berechtigungen: Nur Admin-Panel sehen
+            const permissions = {
+                viewAdminPanel: true,
+                viewBotStatus: true,
+                viewGlobalStats: true,
+                viewServerList: true
+            };
+
+            try {
+                const response = await fetch('/admin/admin-users/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, username, permissions })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Admin-User erfolgreich hinzugefügt!\n\nDer User kann nun das Admin-Panel sehen.\nBerechtigungen können jetzt bearbeitet werden.');
+                    userIdInput.value = '';
+                    usernameInput.value = '';
+                    window.location.reload();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Admin-User entfernen
+        async function removeAdminUser(userId) {
+            if (!confirm('⚠️ Admin-User wirklich entfernen?\n\nDer User verliert sofort alle Admin-Berechtigungen!')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/admin-users/${userId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Admin-User entfernt!');
+                    window.location.reload();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Admin-Berechtigungen bearbeiten
+        function editAdminPermissions(userId) {
+            // Erstelle Permissions-Dialog
+            fetch('/admin/admin-users')
+                .then(res => res.json())
+                .then(data => {
+                    const admin = data.adminUsers.find(a => a.userId === userId);
+                    if (!admin) return;
+
+                    const permissionGroups = {
+                        'Bot Verwaltung': {
+                            viewBotStatus: 'Bot-Status anzeigen',
+                            restartBot: 'Bot neustarten',
+                            manageCommands: 'Commands verwalten',
+                            viewLogs: 'Logs anzeigen'
+                        },
+                        'Wartung & Features': {
+                            toggleMaintenance: 'Wartungsmodus umschalten',
+                            toggleFeatures: 'Features aktivieren/deaktivieren',
+                            manageBypass: 'Bypass-User verwalten'
+                        },
+                        'User Verwaltung': {
+                            searchUsers: 'User suchen',
+                            viewUserStats: 'User-Statistiken anzeigen'
+                        },
+                        'Datenbank': {
+                            createBackup: 'Backups erstellen',
+                            viewBackups: 'Backups anzeigen',
+                            cleanupDatabase: 'Datenbank bereinigen'
+                        },
+                        'Kommunikation': {
+                            sendAnnouncements: 'Wartungsankündigungen senden',
+                            sendBroadcast: 'Global Broadcast senden'
+                        },
+                        'Bug Reports': {
+                            viewBugReports: 'Bug Reports anzeigen',
+                            manageBugReports: 'Bug Reports verwalten'
+                        },
+                        'Statistiken': {
+                            viewGlobalStats: 'Globale Statistiken anzeigen',
+                            viewServerList: 'Server-Liste anzeigen'
+                        }
+                    };
+
+                    let html = `
+                        <div style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+                            <h2 style="margin-bottom: 20px;">
+                                <i class="fas fa-key"></i> Berechtigungen für ${admin.username || admin.userId}
+                            </h2>
+                            <p style="color: #6c757d; margin-bottom: 20px;">
+                                Wähle die Berechtigungen aus, die dieser Admin-User haben soll:
+                            </p>
+                    `;
+
+                    for (const [groupName, perms] of Object.entries(permissionGroups)) {
+                        html += `
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                <h3 style="margin: 0 0 15px 0; color: #5865F2; font-size: 16px;">
+                                    ${groupName}
+                                </h3>
+                                <div style="display: grid; gap: 10px;">
+                        `;
+
+                        for (const [key, label] of Object.entries(perms)) {
+                            const checked = admin.permissions[key] ? 'checked' : '';
+                            html += `
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: white; border-radius: 6px;">
+                                    <input type="checkbox" id="perm_${key}" ${checked} style="cursor: pointer; width: 18px; height: 18px;">
+                                    <span style="flex: 1;">${label}</span>
+                                </label>
+                            `;
+                        }
+
+                        html += `
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    html += `
+                            <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 2px solid #ddd;">
+                                <button onclick="saveAdminPermissions('${userId}')" class="btn" style="flex: 1; background: #57F287; color: #000; padding: 12px; font-weight: 600;">
+                                    <i class="fas fa-save"></i> Speichern
+                                </button>
+                                <button onclick="window.close()" class="btn" style="background: #6c757d; color: white; padding: 12px;">
+                                    <i class="fas fa-times"></i> Abbrechen
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    const win = window.open('', 'Admin Berechtigungen', 'width=800,height=700');
+                    win.document.write(`
+                        <html>
+                        <head>
+                            <title>Admin Berechtigungen - ${admin.username || admin.userId}</title>
+                            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                            <style>
+                                body { 
+                                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                                    padding: 30px;
+                                    background: #f8f9fa;
+                                }
+                                h2, h3 { color: #2C2F33; }
+                                .btn {
+                                    border: none;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-size: 14px;
+                                    transition: opacity 0.3s;
+                                }
+                                .btn:hover { opacity: 0.9; }
+                            </style>
+                        </head>
+                        <body>${html}</body>
+                        </html>
+                    `);
+
+                    // Füge Funktion zum Child-Window hinzu
+                    win.saveAdminPermissions = async function(userId) {
+                        const permissions = {};
+                        
+                        // Sammle alle Berechtigungen
+                        for (const group of Object.values(permissionGroups)) {
+                            for (const key of Object.keys(group)) {
+                                const checkbox = win.document.getElementById('perm_' + key);
+                                if (checkbox) {
+                                    permissions[key] = checkbox.checked;
+                                }
+                            }
+                        }
+
+                        // viewAdminPanel muss immer true sein
+                        permissions.viewAdminPanel = true;
+
+                        try {
+                            const response = await fetch(`/admin/admin-users/${userId}/permissions`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ permissions })
+                            });
+
+                            const data = await response.json();
+
+                            if (data.success) {
+                                alert('✅ Berechtigungen aktualisiert!');
+                                win.close();
+                                window.location.reload();
+                            } else {
+                                throw new Error(data.error);
+                            }
+                        } catch (error) {
+                            alert('❌ Fehler: ' + error.message);
+                        }
+                    };
+                });
+        }
     </script>
+
+    <footer style="margin-top: 50px; padding: 30px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-align: center;">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 0 20px;">
+            <p style="margin: 0; color: white; font-size: 14px;">&copy; 2025 TTH-Bot Dashboard • Made with <i class="fas fa-heart" style="color: #ff6b6b;"></i> by Thunderflash007</p>
+        </div>
+    </footer>
 </body>
 </html>

@@ -32,9 +32,11 @@ module.exports = {
                         .setRequired(true))),
     
     async execute(interaction) {
+        await interaction.deferReply({ ephemeral: true });
+        
         const subcommand = interaction.options.getSubcommand();
         
-        const reportsFile = path.join(__dirname, '../../data/reports.json');
+        const reportsFile = path.join(__dirname, '../../../data/reports.json');
         let reports = [];
         if (fs.existsSync(reportsFile)) {
             reports = JSON.parse(fs.readFileSync(reportsFile, 'utf8'));
@@ -65,7 +67,7 @@ module.exports = {
                 )
                 .setTimestamp();
             
-            await interaction.reply({ embeds: [embed], ephemeral: true });
+            await interaction.editReply({ embeds: [embed] });
             
         } else if (subcommand === 'message') {
             const messageId = interaction.options.getString('message-id');
@@ -92,7 +94,7 @@ module.exports = {
                 )
                 .setTimestamp();
             
-            await interaction.reply({ embeds: [embed], ephemeral: true });
+            await interaction.editReply({ embeds: [embed] });
         }
         
         reports.push(report);

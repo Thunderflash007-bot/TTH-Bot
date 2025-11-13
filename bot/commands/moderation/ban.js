@@ -16,16 +16,19 @@ module.exports = {
                 .setRequired(false)),
     
     async execute(interaction) {
+        // Defer reply um Timeout zu vermeiden
+        await interaction.deferReply();
+
         const target = interaction.options.getUser('user');
         const reason = interaction.options.getString('reason') || 'Kein Grund angegeben';
         const member = interaction.guild.members.cache.get(target.id);
 
         if (!member) {
-            return interaction.reply({ content: '❌ User nicht gefunden!', ephemeral: true });
+            return interaction.editReply({ content: '❌ User nicht gefunden!' });
         }
 
         if (!member.bannable) {
-            return interaction.reply({ content: '❌ Ich kann diesen User nicht bannen!', ephemeral: true });
+            return interaction.editReply({ content: '❌ Ich kann diesen User nicht bannen!' });
         }
 
         try {
@@ -49,13 +52,18 @@ module.exports = {
 
             await member.ban({ reason });
 
-            await ModerationLog.save({
-                guildId: interaction.guild.id,
-                userId: target.id,
-                moderatorId: interaction.user.id,
-                action: 'ban',
-                reason
-            });
+            // Logging
+            try {
+                await ModerationLog.save({
+                    guildId: interaction.guild.id,
+                    userId: target.id,
+                    moderatorId: interaction.user.id,
+                    action: 'ban',
+                    reason
+                });
+            } catch (logError) {
+                console.error('Logging Error:', logError);
+            }
 
             const embed = new EmbedBuilder()
                 .setColor('#ED4245')
@@ -73,10 +81,10 @@ module.exports = {
                 .setFooter({ text: `Case ID: ${Date.now()}` })
                 .setTimestamp();
 
-            await interaction.reply({ embeds: [embed] });
+            await interaction.editReply({ embeds: [embed] });
         } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: '❌ Fehler beim Bannen des Users!', ephemeral: true });
+            console.error('Ban Error:', error);
+            await interaction.editReply({ content: '❌ Fehler beim Bannen des Users!' });
         }
     }
 };

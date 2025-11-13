@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const CustomCommand = require('../models/CustomCommand');
+const GlobalSettings = require('../models/GlobalSettings');
 const { EmbedBuilder } = require('discord.js');
 const config = require('../config.json');
 
@@ -12,23 +13,46 @@ module.exports = {
 
         // Custom Commands prüfen
         if (message.content.startsWith('!')) {
+            // Feature Check
+            if (!GlobalSettings.isFeatureEnabled('customCommands')) {
+                return;
+            }
+            
             const args = message.content.slice(1).trim().split(/ +/);
             const commandName = args.shift().toLowerCase();
             
-            const customCommand = CustomCommand.findOne({ 
-                guildId: message.guild.id, 
-                name: commandName,
-                enabled: true 
-            });
-            
-            if (customCommand) {
-                try {
+            try {
+                const customCommand = CustomCommand.findOne({ 
+                    guildId: message.guild.id, 
+                    name: commandName,
+                    enabled: true 
+                });
+                
+                if (customCommand) {
                     // Variablen ersetzen
                     let response = customCommand.response;
+                    
+                    // Basis-Variablen
                     response = response.replace(/{user}/g, message.author.username);
-                    response = response.replace(/{mention}/g, `${message.author}`);
+                    response = response.replace(/{user\.tag}/g, message.author.tag);
+                    response = response.replace(/{user\.id}/g, message.author.id);
+                    response = response.replace(/{mention}/g, `<@${message.author.id}>`);
                     response = response.replace(/{server}/g, message.guild.name);
+                    response = response.replace(/{server\.id}/g, message.guild.id);
                     response = response.replace(/{members}/g, message.guild.memberCount);
+                    response = response.replace(/{channel}/g, message.channel.name);
+                    response = response.replace(/{channel\.mention}/g, `<#${message.channel.id}>`);
+                    
+                    // Argumente
+                    response = response.replace(/{args}/g, args.join(' ') || 'keine');
+                    response = response.replace(/{args\.0}/g, args[0] || '');
+                    response = response.replace(/{args\.1}/g, args[1] || '');
+                    response = response.replace(/{args\.2}/g, args[2] || '');
+                    
+                    // Datum/Zeit
+                    const now = new Date();
+                    response = response.replace(/{date}/g, now.toLocaleDateString('de-DE'));
+                    response = response.replace(/{time}/g, now.toLocaleTimeString('de-DE'));
                     
                     if (customCommand.useEmbed) {
                         const embed = new EmbedBuilder()
@@ -49,10 +73,11 @@ module.exports = {
                     if (customCommand.deleteInvoke) {
                         await message.delete().catch(() => {});
                     }
-                } catch (error) {
-                    console.error('Fehler bei Custom Command:', error);
+                    
+                    return;
                 }
-                return;
+            } catch (error) {
+                console.error('❌ Fehler bei Custom Command:', error);
             }
         }
 

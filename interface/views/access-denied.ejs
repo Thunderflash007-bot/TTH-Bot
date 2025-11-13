@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zugriff Verweigert - TTH Bot</title>
+    <title>Zugriff verweigert - TTH-Bot</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -203,10 +204,10 @@
             <i class="fas fa-shield-alt"></i>
         </div>
         
-        <h1><%= title %></h1>
+        <h1><%= typeof title !== 'undefined' ? title : 'Zugriff verweigert' %></h1>
         
         <p class="message">
-            <%= message %>
+            <%= typeof message !== 'undefined' ? message : 'Du hast keine Berechtigung, auf diese Seite zuzugreifen.' %>
         </p>
 
         <% if (user) { %>
@@ -223,7 +224,14 @@
         <% } %>
 
         <div class="buttons">
-            <a href="/dashboard" class="btn btn-primary">
+            <% if (inviteLink) { %>
+                <a href="<%= inviteLink %>" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i>
+                    Bot einladen
+                </a>
+            <% } %>
+            
+            <a href="/dashboard" class="btn <%= inviteLink ? 'btn-secondary' : 'btn-primary' %>">
                 <i class="fas fa-home"></i>
                 Zurück zum Dashboard
             </a>
@@ -233,7 +241,7 @@
                     <i class="fab fa-discord"></i>
                     Anmelden
                 </a>
-            <% } else { %>
+            <% } else if (!inviteLink) { %>
                 <a href="/auth/logout" class="btn btn-secondary">
                     <i class="fas fa-sign-out-alt"></i>
                     Abmelden
@@ -275,5 +283,11 @@
         `;
         document.head.appendChild(style);
     </script>
+
+    <footer style="position: fixed; bottom: 0; width: 100%; background: rgba(0, 0, 0, 0.05); padding: 15px 0; text-align: center;">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 0 20px;">
+            <p style="margin: 0; color: #6c757d; font-size: 14px;">&copy; 2025 TTH-Bot Dashboard • Made with <i class="fas fa-heart" style="color: #ff6b6b;"></i> by Thunderflash007</p>
+        </div>
+    </footer>
 </body>
 </html>

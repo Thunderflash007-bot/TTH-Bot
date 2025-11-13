@@ -16,16 +16,19 @@ module.exports = {
                 .setRequired(false)),
     
     async execute(interaction) {
+        // Defer reply um Timeout zu vermeiden
+        await interaction.deferReply();
+
         const target = interaction.options.getUser('user');
         const reason = interaction.options.getString('reason') || 'Kein Grund angegeben';
         const member = interaction.guild.members.cache.get(target.id);
 
         if (!member) {
-            return interaction.reply({ content: '❌ User nicht gefunden!', ephemeral: true });
+            return interaction.editReply({ content: '❌ User nicht gefunden!' });
         }
 
         if (!member.kickable) {
-            return interaction.reply({ content: '❌ Ich kann diesen User nicht kicken!', ephemeral: true });
+            return interaction.editReply({ content: '❌ Ich kann diesen User nicht kicken!' });
         }
 
         try {
@@ -49,13 +52,18 @@ module.exports = {
 
             await member.kick(reason);
 
-            await ModerationLog.save({
-                guildId: interaction.guild.id,
-                userId: target.id,
-                moderatorId: interaction.user.id,
-                action: 'kick',
-                reason
-            });
+            // Logging
+            try {
+                await ModerationLog.save({
+                    guildId: interaction.guild.id,
+                    userId: target.id,
+                    moderatorId: interaction.user.id,
+                    action: 'kick',
+                    reason
+                });
+            } catch (logError) {
+                console.error('Logging Error:', logError);
+            }
 
             const embed = new EmbedBuilder()
                 .setColor('#FEE75C')
@@ -73,10 +81,10 @@ module.exports = {
                 .setFooter({ text: `Case ID: ${Date.now()}` })
                 .setTimestamp();
 
-            await interaction.reply({ embeds: [embed] });
+            await interaction.editReply({ embeds: [embed] });
         } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: '❌ Fehler beim Kicken des Users!', ephemeral: true });
+            console.error('Kick Error:', error);
+            await interaction.editReply({ content: '❌ Fehler beim Kicken des Users!' });
         }
     }
 };

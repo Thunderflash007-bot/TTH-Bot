@@ -18,6 +18,8 @@ module.exports = {
                 .setRequired(true)),
     
     async execute(interaction) {
+        await interaction.deferReply();
+        
         // Feature Check
         if (!GlobalSettings.isFeatureEnabled('warns')) {
             const settings = GlobalSettings.getSettings();
@@ -29,7 +31,7 @@ module.exports = {
                 .setDescription(`Das Warn-System ist derzeit deaktiviert.\n\n**Grund:** ${reason}`)
                 .setFooter({ text: 'Kontaktiere einen Administrator' });
             
-            return await interaction.reply({ embeds: [embed], ephemeral: true });
+            return await interaction.editReply({ embeds: [embed] });
         }
         
         const target = interaction.options.getUser('user');
@@ -90,7 +92,7 @@ module.exports = {
             embed.setFooter({ text: `Warn-ID: ${warning.id} | DM konnte nicht gesendet werden` });
         }
         
-        await interaction.reply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] });
         
         // Auto-Actions bei mehreren Warnungen
         if (warnCount >= 5) {

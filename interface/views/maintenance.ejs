@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wartungsmodus - TTH Bot</title>
+    <title>Wartungsmodus - TTH-Bot</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         * {
             margin: 0;
@@ -310,5 +312,62 @@
             </a>
         </div>
     </div>
+
+    <script>
+        // Socket.IO für Live-Updates bei Wartungsmodus
+        const socket = io();
+        
+        socket.on('connect', () => {
+            console.log('📡 WebSocket verbunden');
+        });
+        
+        socket.on('disconnect', () => {
+            console.log('📡 WebSocket getrennt');
+        });
+        
+        // Wartungsmodus Live-Update
+        socket.on('maintenance-mode-changed', (data) => {
+            console.log('🔔 Wartungsmodus geändert:', data.enabled);
+            
+            if (!data.enabled) {
+                // Wartungsmodus wurde beendet
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #57F287 0%, #3BA55D 100%);
+                    color: white;
+                    padding: 20px 30px;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    z-index: 10000;
+                    font-weight: 600;
+                    animation: slideIn 0.3s ease-out;
+                `;
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <i class="fas fa-check-circle" style="font-size: 24px;"></i>
+                        <div>
+                            <div style="font-size: 18px; margin-bottom: 5px;">✅ Wartungsmodus beendet!</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Dashboard wird neu geladen...</div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                // Seite nach 2 Sekunden neu laden
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2000);
+            }
+        });
+    </script>
+
+    <footer style="position: fixed; bottom: 0; width: 100%; background: rgba(0, 0, 0, 0.2); padding: 15px 0; text-align: center; backdrop-filter: blur(10px);">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 0 20px;">
+            <p style="margin: 0; color: rgba(255, 255, 255, 0.7); font-size: 14px;">&copy; 2025 TTH-Bot Dashboard • Made with <i class="fas fa-heart" style="color: #ff6b6b;"></i> by Thunderflash007</p>
+        </div>
+    </footer>
 </body>
 </html>
