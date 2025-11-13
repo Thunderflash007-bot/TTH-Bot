@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wartungsmodus - TTH Bot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header (immer sichtbar) */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo i {
+            font-size: 32px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .user-name {
+            color: white;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Main Content */
+        .maintenance-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .maintenance-box {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .maintenance-icon {
+            font-size: 80px;
+            color: #FEE75C;
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .maintenance-title {
+            font-size: 32px;
+            color: #2C2F33;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .maintenance-message {
+            font-size: 18px;
+            color: #6c757d;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #5865F2;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+            border-radius: 8px;
+        }
+
+        .info-box i {
+            color: #5865F2;
+            margin-right: 10px;
+        }
+
+        .info-box p {
+            color: #2C2F33;
+            margin: 10px 0;
+        }
+
+        .info-box strong {
+            color: #5865F2;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #FEE75C;
+            color: #2C2F33;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-top: 20px;
+        }
+
+        .status-indicator i {
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header (immer sichtbar) -->
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-robot"></i>
+            <span>TTH Bot Dashboard</span>
+        </div>
+        <div class="user-info">
+            <% if (user) { %>
+                <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png" 
+                     alt="Avatar" class="user-avatar">
+                <span class="user-name"><%= user.username %></span>
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Wartungsmodus-Inhalt -->
+    <div class="maintenance-container">
+        <div class="maintenance-box">
+            <div class="maintenance-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            
+            <h1 class="maintenance-title">Wartungsmodus aktiv</h1>
+            
+            <p class="maintenance-message">
+                <%= message || 'Das Dashboard befindet sich derzeit im Wartungsmodus. Wir arbeiten an Verbesserungen und werden bald wieder für dich da sein.' %>
+            </p>
+
+            <div class="status-indicator">
+                <i class="fas fa-cog"></i>
+                Wartungsarbeiten laufen
+            </div>
+
+            <div class="info-box">
+                <p><i class="fas fa-info-circle"></i> <strong>Was bedeutet das?</strong></p>
+                <p>Während des Wartungsmodus sind folgende Bereiche nicht verfügbar:</p>
+                <ul style="margin: 10px 0; padding-left: 30px;">
+                    <li>Dashboard-Funktionen</li>
+                    <li>Server-Verwaltung</li>
+                    <li>Bot-Commands in Discord</li>
+                    <li>Alle interaktiven Features</li>
+                </ul>
+                <p style="margin-top: 15px;">
+                    <i class="fas fa-clock"></i> Bitte versuche es in einigen Minuten erneut.
+                </p>
+            </div>
+
+            <a href="/" class="back-btn">
+                <i class="fas fa-home"></i> Zurück zur Startseite
+            </a>
+        </div>
+    </div>
+</body>
+</html>

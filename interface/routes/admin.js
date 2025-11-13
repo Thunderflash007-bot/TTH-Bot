@@ -94,6 +94,87 @@ router.get('/bot-stats', isAdmin, async (req, res) => {
     }
 });
 
+// Global Settings abrufen
+router.get('/settings', isAdmin, async (req, res) => {
+    try {
+        const botApi = axios.create({
+            baseURL: process.env.BOT_API_URL || 'http://localhost:4301',
+            timeout: 5000
+        });
+
+        const response = await botApi.get('/api/admin/settings');
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Wartungsmodus umschalten
+router.post('/toggle-maintenance', isAdmin, async (req, res) => {
+    try {
+        const { enabled, message } = req.body;
+        
+        const botApi = axios.create({
+            baseURL: process.env.BOT_API_URL || 'http://localhost:4301',
+            timeout: 5000
+        });
+
+        const response = await botApi.post('/api/admin/maintenance-mode', {
+            enabled,
+            message,
+            userId: req.user.id
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Feature umschalten
+router.post('/toggle-feature', isAdmin, async (req, res) => {
+    try {
+        const { feature, enabled, reason } = req.body;
+        
+        const botApi = axios.create({
+            baseURL: process.env.BOT_API_URL || 'http://localhost:4301',
+            timeout: 5000
+        });
+
+        const response = await botApi.post('/api/admin/toggle-feature', {
+            feature,
+            enabled,
+            reason,
+            userId: req.user.id
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Admin-Bypass hinzufügen/entfernen
+router.post('/admin-bypass', isAdmin, async (req, res) => {
+    try {
+        const { userId, action } = req.body; // action: 'add' oder 'remove'
+        
+        const botApi = axios.create({
+            baseURL: process.env.BOT_API_URL || 'http://localhost:4301',
+            timeout: 5000
+        });
+
+        const response = await botApi.post('/api/admin/bypass', {
+            userId,
+            action
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Bot neu starten (nur Befehle neu laden)
 router.post('/reload-bot', isAdmin, async (req, res) => {
     try {

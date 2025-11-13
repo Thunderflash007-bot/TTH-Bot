@@ -18,6 +18,7 @@ class GlobalSettings {
             id: 'global',
             maintenanceMode: false,
             maintenanceMessage: 'Der Bot befindet sich im Wartungsmodus. Bitte versuche es später erneut.',
+            adminBypass: ['1437453669699424276'], // Admin User IDs die trotz Wartung Zugriff haben
             features: {
                 // Ticket System
                 tickets: { enabled: true, reason: '' },
@@ -37,7 +38,6 @@ class GlobalSettings {
                 news: { enabled: true, reason: '' },
                 
                 // Communication
-                twitch: { enabled: true, reason: '' },
                 vorschlag: { enabled: true, reason: '' },
                 kummerkasten: { enabled: true, reason: '' },
                 
@@ -100,6 +100,30 @@ class GlobalSettings {
         }
         
         return true; // Default: enabled
+    }
+
+    canBypassMaintenance(userId) {
+        const settings = this.getSettings();
+        return settings.adminBypass && settings.adminBypass.includes(userId);
+    }
+
+    addAdminBypass(userId) {
+        const settings = this.getSettings();
+        if (!settings.adminBypass) settings.adminBypass = [];
+        if (!settings.adminBypass.includes(userId)) {
+            settings.adminBypass.push(userId);
+            return this.save(settings);
+        }
+        return settings;
+    }
+
+    removeAdminBypass(userId) {
+        const settings = this.getSettings();
+        if (settings.adminBypass) {
+            settings.adminBypass = settings.adminBypass.filter(id => id !== userId);
+            return this.save(settings);
+        }
+        return settings;
     }
 
     save(settings) {

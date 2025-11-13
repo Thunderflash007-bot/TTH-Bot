@@ -380,6 +380,95 @@ function startBotAPI(client) {
         }
     });
 
+    // Global Settings abrufen
+    app.get('/api/admin/settings', async (req, res) => {
+        try {
+            const GlobalSettings = require('./models/GlobalSettings');
+            const settings = GlobalSettings.getSettings();
+            res.json(settings);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+
+    // Wartungsmodus umschalten
+    app.post('/api/admin/maintenance-mode', async (req, res) => {
+        try {
+            const { enabled, message, userId } = req.body;
+            const GlobalSettings = require('./models/GlobalSettings');
+            
+            GlobalSettings.setMaintenanceMode(enabled, message, userId);
+            
+            // Bot-Status aktualisieren
+            if (enabled) {
+                await botClient.user.setPresence({
+                    activities: [{ name: '🔧 Wartungsmodus', type: 0 }],
+                    status: 'dnd'
+                });
+            } else {
+                await botClient.user.setPresence({
+                    activities: [{ name: '/help | TTH-Bot', type: 0 }],
+                    status: 'online'
+                });
+            }
+            
+            res.json({ success: true, maintenanceMode: enabled });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+
+    // Feature umschalten
+    app.post('/api/admin/toggle-feature', async (req, res) => {
+        try {
+            const { feature, enabled, reason, userId } = req.body;
+            const GlobalSettings = require('./models/GlobalSettings');
+            
+            GlobalSettings.updateFeature(feature, enabled, reason, userId);
+            
+            res.json({ success: true, feature, enabled });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+
+    // Admin-Bypass verwalten
+    app.post('/api/admin/bypass', async (req, res) => {
+        try {
+            const { userId, action } = req.body;
+            const GlobalSettings = require('./models/GlobalSettings');
+            
+            if (action === 'add') {
+                GlobalSettings.addAdminBypass(userId);
+            } else if (action === 'remove') {
+                GlobalSettings.removeAdminBypass(userId);
+            }
+            
+            const settings = GlobalSettings.getSettings();
+            res.json({ success: true, adminBypass: settings.adminBypass });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+
+    // User-Info abrufen (für Admin-Bypass-Liste)
+    app.get('/api/user/:userId', async (req, res) => {
+        try {
+            const { userId } = req.params;
+            const user = await botClient.users.fetch(userId);
+            
+            res.json({
+                id: user.id,
+                username: user.username,
+                discriminator: user.discriminator,
+                avatar: user.avatar,
+                bot: user.bot
+            });
+        } catch (error) {
+            res.status(404).json({ error: 'User nicht gefunden' });
+        }
+    });
+
     // Get Warnings für Dashboard
     app.get('/api/guilds/:guildId/warnings', async (req, res) => {
         try {
@@ -580,104 +669,6 @@ function startBotAPI(client) {
             
             await channel.send({ embeds: [discordEmbed] });
             res.json({ success: true });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    });
-
-    // Twitch Notifications - Get all
-    app.get('/api/guilds/:guildId/twitch', async (req, res) => {
-        try {
-            const { guildId } = req.params;
-            const TwitchNotification = require('./models/TwitchNotification');
-            
-            const notifications = TwitchNotification.find({ guildId });
-            
-            // Enriche mit Channel-Namen
-            const enriched = await Promise.all(
-                notifications.map(async (notif) => {
-                    try {
-                        const guild = await botClient.guilds.fetch(guildId);
-                        const channel = await guild.channels.fetch(notif.channelId);
-                        return {
-                            ...notif,
-                            channelName: channel ? channel.name : 'Unbekannter Channel'
-                        };
-                    } catch {
-                        return { ...notif, channelName: 'Channel gelöscht' };
-                    }
-                })
-            );
-            
-            res.json(enriched);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    });
-
-    // Twitch Notifications - Add
-    app.post('/api/guilds/:guildId/twitch', async (req, res) => {
-        try {
-            const { guildId } = req.params;
-            const { twitchUsername, channelId, message, mention } = req.body;
-            
-            const TwitchNotification = require('./models/TwitchNotification');
-            
-            const notification = TwitchNotification.create({
-                guildId,
-                twitchUsername,
-                channelId,
-                message: message || null,
-                mention: mention || null
-            });
-            
-            res.json({ success: true, notification });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    });
-
-    // Twitch Notifications - Delete
-    app.delete('/api/guilds/:guildId/twitch/:id', async (req, res) => {
-        try {
-            const { id } = req.params;
-            const TwitchNotification = require('./models/TwitchNotification');
-            
-            TwitchNotification.remove({ id });
-            res.json({ success: true });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    });
-
-    // Twitch Notifications - Toggle enabled
-    app.patch('/api/guilds/:guildId/twitch/:id/toggle', async (req, res) => {
-        try {
-            const { id } = req.params;
-            const TwitchNotification = require('./models/TwitchNotification');
-            
-            const notification = TwitchNotification.findOne({ id });
-            if (!notification) {
-                return res.status(404).json({ error: 'Notification nicht gefunden' });
-            }
-            
-            notification.enabled = !notification.enabled;
-            TwitchNotification.save(notification);
-            
-            res.json({ success: true, notification });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    });
-    
-    // Get Twitch Notifications
-    app.get('/api/guilds/:guildId/twitch', async (req, res) => {
-        try {
-            const { guildId } = req.params;
-            const TwitchNotification = require('./models/TwitchNotification');
-            
-            const notifications = TwitchNotification.find({ guildId });
-            res.json(notifications);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

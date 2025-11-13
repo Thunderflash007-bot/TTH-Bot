@@ -672,83 +672,17 @@ router.post('/bot/embed', isAuthenticated, async (req, res) => {
     }
 });
 
-// Twitch Notifications - Get
-router.get('/bot/guilds/:guildId/twitch', isAuthenticated, async (req, res) => {
+// User-Info abrufen (für Bypass-Liste)
+router.get('/user/:userId', isAuthenticated, async (req, res) => {
     try {
-        const { guildId } = req.params;
-        const guild = req.user.guilds.find(g => g.id === guildId);
-        
-        if (!guild || (guild.permissions & 0x20) !== 0x20) {
-            return res.status(403).json({ error: 'Keine Berechtigung' });
-        }
-
+        const { userId } = req.params;
         const axios = require('axios');
-        const BOT_API = process.env.BOT_API_URL || 'http://localhost:3001';
-        const response = await axios.get(`${BOT_API}/api/guilds/${guildId}/twitch`);
+        const BOT_API = process.env.BOT_API_URL || 'http://localhost:4301';
         
+        const response = await axios.get(`${BOT_API}/api/user/${userId}`);
         res.json(response.data);
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Twitch Notifications - Add
-router.post('/bot/guilds/:guildId/twitch', isAuthenticated, async (req, res) => {
-    try {
-        const { guildId } = req.params;
-        const guild = req.user.guilds.find(g => g.id === guildId);
-        
-        if (!guild || (guild.permissions & 0x20) !== 0x20) {
-            return res.status(403).json({ error: 'Keine Berechtigung' });
-        }
-
-        const axios = require('axios');
-        const BOT_API = process.env.BOT_API_URL || 'http://localhost:3001';
-        const response = await axios.post(`${BOT_API}/api/guilds/${guildId}/twitch`, req.body);
-        
-        res.json(response.data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Twitch Notifications - Delete
-router.delete('/bot/guilds/:guildId/twitch/:id', isAuthenticated, async (req, res) => {
-    try {
-        const { guildId, id } = req.params;
-        const guild = req.user.guilds.find(g => g.id === guildId);
-        
-        if (!guild || (guild.permissions & 0x20) !== 0x20) {
-            return res.status(403).json({ error: 'Keine Berechtigung' });
-        }
-
-        const axios = require('axios');
-        const BOT_API = process.env.BOT_API_URL || 'http://localhost:3001';
-        const response = await axios.delete(`${BOT_API}/api/guilds/${guildId}/twitch/${id}`);
-        
-        res.json(response.data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Twitch Notifications - Toggle
-router.patch('/bot/guilds/:guildId/twitch/:id/toggle', isAuthenticated, async (req, res) => {
-    try {
-        const { guildId, id } = req.params;
-        const guild = req.user.guilds.find(g => g.id === guildId);
-        
-        if (!guild || (guild.permissions & 0x20) !== 0x20) {
-            return res.status(403).json({ error: 'Keine Berechtigung' });
-        }
-
-        const axios = require('axios');
-        const BOT_API = process.env.BOT_API_URL || 'http://localhost:3001';
-        const response = await axios.patch(`${BOT_API}/api/guilds/${guildId}/twitch/${id}/toggle`);
-        
-        res.json(response.data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(404).json({ error: 'User nicht gefunden' });
     }
 });
 

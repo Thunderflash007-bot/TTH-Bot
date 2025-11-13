@@ -81,6 +81,140 @@
             font-size: 2.5em;
             margin: 10px 0;
         }
+        
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: #ED4245;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .slider.round {
+            border-radius: 34px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        
+        /* Feature Toggle Items */
+        .feature-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #5865F2;
+        }
+        .feature-item.disabled {
+            border-left-color: #ED4245;
+            opacity: 0.7;
+        }
+        .feature-info h4 {
+            margin: 0 0 5px 0;
+            color: #2C2F33;
+        }
+        .feature-info p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 13px;
+        }
+        .feature-toggle-switch .switch {
+            width: 50px;
+            height: 28px;
+        }
+        .feature-toggle-switch .slider:before {
+            height: 20px;
+            width: 20px;
+        }
+        .feature-toggle-switch input:checked + .slider {
+            background-color: #57F287;
+        }
+        
+        /* Bypass User Item */
+        .bypass-user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #5865F2;
+        }
+        .bypass-user-item.current-user {
+            border-left-color: #57F287;
+            background: #e8f5e9;
+        }
+        .bypass-user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .bypass-user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #5865F2;
+        }
+        .bypass-user-name {
+            font-weight: 500;
+            color: #2C2F33;
+        }
+        .bypass-user-id {
+            color: #6c757d;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .bypass-remove-btn {
+            background: #ED4245;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+        .bypass-remove-btn:hover {
+            background: #c23739;
+        }
+        .bypass-remove-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -131,6 +265,87 @@
                     <i class="fas fa-clock" style="font-size: 2em;"></i>
                     <h3><%= botStatus.uptime || '0h' %></h3>
                     <p>Uptime</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wartungsmodus & Feature Control -->
+        <div class="admin-card" style="border: 3px solid #ED4245;">
+            <h2><i class="fas fa-shield-alt"></i> Globale Systemsteuerung</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                <i class="fas fa-exclamation-triangle" style="color: #ED4245;"></i>
+                <strong>Achtung:</strong> Diese Einstellungen betreffen ALLE Server und alle Nutzer!
+            </p>
+
+            <!-- Wartungsmodus Toggle -->
+            <div style="background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid #ED4245;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h3 style="margin: 0; color: #2C2F33;">
+                            <i class="fas fa-tools"></i> Wartungsmodus
+                        </h3>
+                        <p style="color: #6c757d; margin: 5px 0 0 0; font-size: 14px;">
+                            Deaktiviert alle Bot-Funktionen und Dashboard-Zugriff für alle User
+                        </p>
+                    </div>
+                    <label class="switch" style="margin: 0;">
+                        <input type="checkbox" id="maintenanceModeToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                <div id="maintenanceModeSettings" style="display: none; margin-top: 20px;">
+                    <div class="form-group">
+                        <label><i class="fas fa-comment"></i> Wartungs-Nachricht</label>
+                        <textarea id="maintenanceModeMessage" class="form-control" rows="3" placeholder="Diese Nachricht sehen User wenn sie Commands nutzen wollen...">Der Bot befindet sich im Wartungsmodus. Bitte versuche es später erneut.</textarea>
+                    </div>
+                    <button onclick="updateMaintenanceMode()" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-save"></i> Wartungsmodus aktivieren
+                    </button>
+                </div>
+                
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <strong style="color: #5865F2;">
+                        <i class="fas fa-user-shield"></i> Admin-Bypass Verwaltung:
+                    </strong>
+                    <p style="margin: 10px 0 15px 0; color: #6c757d; font-size: 14px;">
+                        User mit Bypass-Rechten können den Bot auch im Wartungsmodus und bei deaktivierten Features nutzen.
+                    </p>
+                    
+                    <!-- Bypass User Liste -->
+                    <div id="bypassUsersList" style="margin-bottom: 15px;">
+                        <div style="text-align: center; padding: 10px; color: #6c757d;">
+                            <i class="fas fa-spinner fa-spin"></i> Lade...
+                        </div>
+                    </div>
+                    
+                    <!-- User hinzufügen -->
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <input type="text" id="bypassUserId" class="form-control" placeholder="User-ID eingeben" style="flex: 1;" onkeypress="if(event.key==='Enter') addBypassUser()">
+                        <button onclick="addBypassUser()" class="btn btn-primary" style="white-space: nowrap;">
+                            <i class="fas fa-plus"></i> Hinzufügen
+                        </button>
+                    </div>
+                    <small style="color: #6c757d; display: block; margin-top: 5px;">
+                        <i class="fas fa-info-circle"></i> Rechtsklick auf User in Discord → "Nutzer-ID kopieren"
+                    </small>
+                </div>
+            </div>
+
+            <!-- Feature Toggles -->
+            <div style="background: #f8f9fa; padding: 25px; border-radius: 10px;">
+                <h3 style="margin: 0 0 15px 0; color: #2C2F33;">
+                    <i class="fas fa-toggle-on"></i> Feature-Kontrolle
+                </h3>
+                <p style="color: #6c757d; margin-bottom: 20px; font-size: 14px;">
+                    Deaktiviere einzelne Features global für alle Server (z.B. bei Bugs oder Problemen)
+                </p>
+                
+                <div id="featureToggles">
+                    <div style="text-align: center; padding: 20px; color: #6c757d;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                        <p style="margin-top: 10px;">Lade Features...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -458,7 +673,6 @@
                     projects: '🎮 Projekt-Management',
                     ports: '🌐 Port-Verwaltung',
                     news: '📰 News',
-                    twitch: '📺 Twitch-Notifications',
                     vorschlag: '💡 Vorschläge',
                     kummerkasten: '📬 Kummerkasten',
                     verify: '✅ Verifizierung',
@@ -625,8 +839,308 @@
 
         // Beim Laden
         document.addEventListener('DOMContentLoaded', () => {
-            loadFeatureToggles();
+            loadGlobalSettings();
         });
+
+        // Load Global Settings (Wartungsmodus + Features)
+        async function loadGlobalSettings() {
+            try {
+                const response = await fetch('/admin/settings');
+                const settings = await response.json();
+                
+                // Wartungsmodus UI aktualisieren
+                const maintenanceToggle = document.getElementById('maintenanceModeToggle');
+                maintenanceToggle.checked = settings.maintenanceMode;
+                document.getElementById('maintenanceModeMessage').value = settings.maintenanceMessage || '';
+                
+                if (settings.maintenanceMode) {
+                    document.getElementById('maintenanceModeSettings').style.display = 'block';
+                }
+                
+                // Feature Toggles laden
+                loadFeatureToggles(settings.features);
+                
+                // Bypass User laden
+                loadBypassUsers(settings.adminBypass || []);
+            } catch (error) {
+                console.error('Fehler beim Laden der Settings:', error);
+            }
+        }
+
+        // Bypass Users laden und anzeigen
+        async function loadBypassUsers(bypassIds) {
+            const container = document.getElementById('bypassUsersList');
+            
+            if (bypassIds.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 15px; color: #6c757d; background: #f8f9fa; border-radius: 8px;">
+                        <i class="fas fa-user-slash"></i>
+                        <p style="margin: 5px 0 0 0;">Keine Bypass-User konfiguriert</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            const currentUserId = '<%= user.id %>';
+            
+            for (const userId of bypassIds) {
+                const isCurrent = userId === currentUserId;
+                
+                // Versuche User-Daten zu holen
+                try {
+                    const response = await fetch(`/api/user/${userId}`);
+                    const userData = await response.json();
+                    
+                    html += `
+                        <div class="bypass-user-item ${isCurrent ? 'current-user' : ''}">
+                            <div class="bypass-user-info">
+                                <img src="https://cdn.discordapp.com/avatars/${userId}/${userData.avatar}.png" 
+                                     class="bypass-user-avatar" 
+                                     onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                <div>
+                                    <div class="bypass-user-name">
+                                        ${userData.username || 'Unbekannt'}
+                                        ${isCurrent ? '<span style="color: #57F287; margin-left: 8px;"><i class="fas fa-check-circle"></i> Du</span>' : ''}
+                                    </div>
+                                    <div class="bypass-user-id">${userId}</div>
+                                </div>
+                            </div>
+                            <button 
+                                class="bypass-remove-btn" 
+                                onclick="removeBypassUser('${userId}')"
+                                ${isCurrent ? 'disabled title="Du kannst dich nicht selbst entfernen"' : ''}>
+                                <i class="fas fa-trash"></i> Entfernen
+                            </button>
+                        </div>
+                    `;
+                } catch (error) {
+                    // User nicht gefunden - zeige nur ID
+                    html += `
+                        <div class="bypass-user-item ${isCurrent ? 'current-user' : ''}">
+                            <div class="bypass-user-info">
+                                <div style="width: 32px; height: 32px; background: #5865F2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <div class="bypass-user-name">
+                                        User nicht gefunden
+                                        ${isCurrent ? '<span style="color: #57F287; margin-left: 8px;"><i class="fas fa-check-circle"></i> Du</span>' : ''}
+                                    </div>
+                                    <div class="bypass-user-id">${userId}</div>
+                                </div>
+                            </div>
+                            <button 
+                                class="bypass-remove-btn" 
+                                onclick="removeBypassUser('${userId}')"
+                                ${isCurrent ? 'disabled title="Du kannst dich nicht selbst entfernen"' : ''}>
+                                <i class="fas fa-trash"></i> Entfernen
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Bypass User hinzufügen
+        async function addBypassUser() {
+            const input = document.getElementById('bypassUserId');
+            const userId = input.value.trim();
+            
+            if (!userId) {
+                alert('⚠️ Bitte gib eine User-ID ein!');
+                return;
+            }
+            
+            // Validiere User-ID Format (nur Zahlen, 17-19 Zeichen)
+            if (!/^\d{17,19}$/.test(userId)) {
+                alert('❌ Ungültige User-ID! Muss 17-19 Ziffern lang sein.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/admin-bypass', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, action: 'add' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ User erfolgreich hinzugefügt!');
+                    input.value = '';
+                    loadBypassUsers(data.adminBypass);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Bypass User entfernen
+        async function removeBypassUser(userId) {
+            const currentUserId = '<%= user.id %>';
+            
+            if (userId === currentUserId) {
+                alert('❌ Du kannst dich nicht selbst entfernen!');
+                return;
+            }
+            
+            if (!confirm('⚠️ Bypass-Rechte für diesen User entfernen?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/admin-bypass', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, action: 'remove' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ User erfolgreich entfernt!');
+                    loadBypassUsers(data.adminBypass);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Wartungsmodus Toggle
+        document.getElementById('maintenanceModeToggle').addEventListener('change', function() {
+            const settingsDiv = document.getElementById('maintenanceModeSettings');
+            if (this.checked) {
+                settingsDiv.style.display = 'block';
+            } else {
+                updateMaintenanceMode();
+            }
+        });
+
+        // Wartungsmodus aktualisieren
+        async function updateMaintenanceMode() {
+            const enabled = document.getElementById('maintenanceModeToggle').checked;
+            const message = document.getElementById('maintenanceModeMessage').value;
+            
+            if (!enabled || confirm(enabled ? '⚠️ Wartungsmodus aktivieren? Alle User verlieren Zugriff!' : 'Wartungsmodus deaktivieren?')) {
+                try {
+                    const response = await fetch('/admin/toggle-maintenance', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ enabled, message })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert(enabled ? '🔧 Wartungsmodus AKTIVIERT! Bot-Status: Wartung' : '✅ Wartungsmodus BEENDET!');
+                        if (!enabled) {
+                            document.getElementById('maintenanceModeSettings').style.display = 'none';
+                        }
+                    } else {
+                        throw new Error(data.error);
+                    }
+                } catch (error) {
+                    alert('❌ Fehler: ' + error.message);
+                    document.getElementById('maintenanceModeToggle').checked = !enabled;
+                }
+            } else {
+                document.getElementById('maintenanceModeToggle').checked = !enabled;
+            }
+        }
+
+        // Feature Toggles laden
+        function loadFeatureToggles(features) {
+            const container = document.getElementById('featureToggles');
+            
+            const featureNames = {
+                tickets: { name: 'Ticket System', icon: 'fa-ticket-alt', desc: 'Ticket-Erstellung und Verwaltung' },
+                ticketPriority: { name: 'Ticket-Priorität', icon: 'fa-exclamation-circle', desc: '/priority Command' },
+                ticketForward: { name: 'Ticket-Weiterleitung', icon: 'fa-share', desc: '/forward Command' },
+                warns: { name: 'Warn-System', icon: 'fa-exclamation-triangle', desc: '/warn, /warns, /unwarn Commands' },
+                reports: { name: 'Report-System', icon: 'fa-flag', desc: '/report Command' },
+                ban: { name: 'Ban', icon: 'fa-ban', desc: '/ban Command' },
+                kick: { name: 'Kick', icon: 'fa-shoe-prints', desc: '/kick Command' },
+                clear: { name: 'Clear', icon: 'fa-broom', desc: '/clear Command' },
+                projects: { name: 'Projekt-Management', icon: 'fa-folder', desc: '/projekt Commands' },
+                ports: { name: 'Port-Verwaltung', icon: 'fa-network-wired', desc: '/port Commands' },
+                news: { name: 'News', icon: 'fa-newspaper', desc: '/news Command' },
+                vorschlag: { name: 'Vorschläge', icon: 'fa-lightbulb', desc: '/vorschlag Command' },
+                kummerkasten: { name: 'Kummerkasten', icon: 'fa-box', desc: 'Anonymer Chat' },
+                verify: { name: 'Verifizierung', icon: 'fa-check-circle', desc: '/verify System' },
+                prefix: { name: 'Auto-Prefixes', icon: 'fa-tag', desc: 'Nickname-Prefixes' },
+                scheduledMessages: { name: 'Geplante Nachrichten', icon: 'fa-clock', desc: 'Scheduled Messages' },
+                autoRoles: { name: 'Auto-Roles', icon: 'fa-user-tag', desc: 'Automatische Rollen' },
+                customCommands: { name: 'Custom Commands', icon: 'fa-terminal', desc: 'Eigene Commands' },
+                dashboard: { name: 'Dashboard', icon: 'fa-th-large', desc: 'Web-Dashboard Zugriff' }
+            };
+            
+            let html = '';
+            for (const [key, data] of Object.entries(featureNames)) {
+                const feature = features[key] || { enabled: true, reason: '' };
+                html += `
+                    <div class="feature-item ${!feature.enabled ? 'disabled' : ''}">
+                        <div class="feature-info">
+                            <h4>
+                                <i class="fas ${data.icon}"></i> ${data.name}
+                            </h4>
+                            <p>${data.desc}</p>
+                            ${!feature.enabled && feature.reason ? `<p style="color: #ED4245; margin-top: 5px;"><strong>Grund:</strong> ${feature.reason}</p>` : ''}
+                        </div>
+                        <div class="feature-toggle-switch">
+                            <label class="switch">
+                                <input type="checkbox" ${feature.enabled ? 'checked' : ''} 
+                                       onchange="toggleFeature('${key}', this.checked)">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Feature umschalten
+        async function toggleFeature(featureName, enabled) {
+            let reason = '';
+            
+            if (!enabled) {
+                reason = prompt('Grund für Deaktivierung (wird Usern angezeigt):');
+                if (reason === null) {
+                    // Cancelled - Revert toggle
+                    event.target.checked = true;
+                    return;
+                }
+            }
+            
+            try {
+                const response = await fetch('/admin/toggle-feature', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ feature: featureName, enabled, reason })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(enabled ? `✅ Feature "${featureName}" aktiviert!` : `⚠️ Feature "${featureName}" deaktiviert!`);
+                    loadGlobalSettings(); // Reload
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+                event.target.checked = !enabled; // Revert
+            }
+        }
     </script>
 </body>
 </html>

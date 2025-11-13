@@ -1,18 +1,21 @@
 const { EmbedBuilder } = require('discord.js');
 const GlobalSettings = require('../models/GlobalSettings');
+const { getFeatureForCommand, getFeatureForButton, getFeatureForModal } = require('../utils/featureMapping');
 
 module.exports = {
     name: 'interactionCreate',
     async execute(interaction, client) {
-        // Global Maintenance Mode Check
         const settings = GlobalSettings.getSettings();
+        const hasBypass = GlobalSettings.canBypassMaintenance(interaction.user.id);
         
-        if (settings.maintenanceMode && interaction.user.id !== '465490004601151498') {
+        // Global Maintenance Mode Check (mit Admin-Bypass)
+        if (settings.maintenanceMode && !hasBypass) {
             const embed = new EmbedBuilder()
-                .setColor('#FEE75C')
+                .setColor('#ED4245')
                 .setTitle('🔧 Wartungsmodus')
                 .setDescription(settings.maintenanceMessage || 'Der Bot befindet sich im Wartungsmodus.')
-                .setFooter({ text: 'Bitte versuche es später erneut' });
+                .setFooter({ text: 'Bitte versuche es später erneut' })
+                .setTimestamp();
             
             if (interaction.replied || interaction.deferred) {
                 return await interaction.followUp({ embeds: [embed], ephemeral: true });
@@ -25,6 +28,24 @@ module.exports = {
         if (interaction.isChatInputCommand()) {
             const command = client.commands.get(interaction.commandName);
             if (!command) return;
+
+            // Feature-Check für Command
+            const feature = getFeatureForCommand(interaction.commandName);
+            if (feature && !hasBypass) {
+                if (!GlobalSettings.isFeatureEnabled(feature)) {
+                    const featureData = settings.features[feature];
+                    const reason = featureData?.reason || 'Dieses Feature ist vorübergehend deaktiviert.';
+                    
+                    const embed = new EmbedBuilder()
+                        .setColor('#FEE75C')
+                        .setTitle('⚠️ Feature deaktiviert')
+                        .setDescription(`**${feature}** ist derzeit deaktiviert.\n\n**Grund:** ${reason}`)
+                        .setFooter({ text: 'Kontaktiere einen Administrator für weitere Informationen' })
+                        .setTimestamp();
+                    
+                    return await interaction.reply({ embeds: [embed], ephemeral: true });
+                }
+            }
 
             try {
                 await command.execute(interaction, client);
@@ -41,6 +62,24 @@ module.exports = {
 
         // Buttons
         if (interaction.isButton()) {
+            // Feature-Check für Button
+            const feature = getFeatureForButton(interaction.customId);
+            if (feature && !hasBypass) {
+                if (!GlobalSettings.isFeatureEnabled(feature)) {
+                    const featureData = settings.features[feature];
+                    const reason = featureData?.reason || 'Dieses Feature ist vorübergehend deaktiviert.';
+                    
+                    const embed = new EmbedBuilder()
+                        .setColor('#FEE75C')
+                        .setTitle('⚠️ Feature deaktiviert')
+                        .setDescription(`**${feature}** ist derzeit deaktiviert.\n\n**Grund:** ${reason}`)
+                        .setFooter({ text: 'Kontaktiere einen Administrator für weitere Informationen' })
+                        .setTimestamp();
+                    
+                    return await interaction.reply({ embeds: [embed], ephemeral: true });
+                }
+            }
+            
             // Versuche zuerst die volle customId, dann nur den ersten Teil
             let button = client.buttons.get(interaction.customId);
             if (!button) {
@@ -65,6 +104,24 @@ module.exports = {
 
         // Modals
         if (interaction.isModalSubmit()) {
+            // Feature-Check für Modal
+            const feature = getFeatureForModal(interaction.customId);
+            if (feature && !hasBypass) {
+                if (!GlobalSettings.isFeatureEnabled(feature)) {
+                    const featureData = settings.features[feature];
+                    const reason = featureData?.reason || 'Dieses Feature ist vorübergehend deaktiviert.';
+                    
+                    const embed = new EmbedBuilder()
+                        .setColor('#FEE75C')
+                        .setTitle('⚠️ Feature deaktiviert')
+                        .setDescription(`**${feature}** ist derzeit deaktiviert.\n\n**Grund:** ${reason}`)
+                        .setFooter({ text: 'Kontaktiere einen Administrator für weitere Informationen' })
+                        .setTimestamp();
+                    
+                    return await interaction.reply({ embeds: [embed], ephemeral: true });
+                }
+            }
+            
             const modalId = interaction.customId.split('_')[0];
             const modal = client.modals.get(modalId);
             if (modal) {

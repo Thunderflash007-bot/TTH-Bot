@@ -5,13 +5,36 @@ const GuildConfig = require(path.join(__dirname, '../../bot/models/GuildConfig')
 const Ticket = require(path.join(__dirname, '../../bot/models/Ticket'));
 const Application = require(path.join(__dirname, '../../bot/models/Application'));
 const botClient = require('../utils/botClient');
+const { checkDashboardAccess } = require(path.join(__dirname, '../../bot/middleware/featureCheck'));
 
 function isAuthenticated(req, res, next) {
     if (req.isAuthenticated()) return next();
     res.redirect('/auth/discord');
 }
 
-router.get('/', isAuthenticated, async (req, res) => {
+// Middleware: Wartungsmodus-Check
+function maintenanceCheck(req, res, next) {
+    if (!req.user) return next();
+    
+    const access = checkDashboardAccess(req.user.id);
+    
+    console.log(`[Maintenance Check] User: ${req.user.username} (${req.user.id})`);
+    console.log(`[Maintenance Check] Access:`, access);
+    
+    if (!access.allowed) {
+        console.log(`[Maintenance Check] ❌ Zugriff verweigert - Zeige Wartungsseite`);
+        return res.render('maintenance', {
+            user: req.user,
+            message: access.message,
+            inMaintenance: access.inMaintenance
+        });
+    }
+    
+    console.log(`[Maintenance Check] ✅ Zugriff erlaubt`);
+    next();
+}
+
+router.get('/', isAuthenticated, maintenanceCheck, async (req, res) => {
     try {
         const guilds = req.user.guilds.filter(guild => 
             (guild.permissions & 0x20) === 0x20
@@ -43,7 +66,7 @@ router.get('/', isAuthenticated, async (req, res) => {
     }
 });
 
-router.get('/:id', isAuthenticated, async (req, res) => {
+router.get('/:id', isAuthenticated, maintenanceCheck, async (req, res) => {
     try {
         const guildId = req.params.id;
         const guilds = req.user.guilds.filter(guild => 

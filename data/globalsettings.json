@@ -1,0 +1,93 @@
+[
+  {
+    "_id": "1763033947973ij0wk3ukw",
+    "id": "global",
+    "maintenanceMode": false,
+    "maintenanceMessage": "Der Bot befindet sich im Wartungsmodus. Bitte versuche es später erneut.",
+    "features": {
+      "tickets": {
+        "enabled": true,
+        "reason": ""
+      },
+      "ticketPriority": {
+        "enabled": true,
+        "reason": ""
+      },
+      "ticketForward": {
+        "enabled": true,
+        "reason": ""
+      },
+      "warns": {
+        "enabled": true,
+        "reason": ""
+      },
+      "reports": {
+        "enabled": true,
+        "reason": ""
+      },
+      "ban": {
+        "enabled": true,
+        "reason": ""
+      },
+      "kick": {
+        "enabled": true,
+        "reason": ""
+      },
+      "clear": {
+        "enabled": true,
+        "reason": ""
+      },
+      "projects": {
+        "enabled": true,
+        "reason": ""
+      },
+      "ports": {
+        "enabled": true,
+        "reason": ""
+      },
+      "news": {
+        "enabled": true,
+        "reason": ""
+      },
+      "twitch": {
+        "enabled": true,
+        "reason": ""
+      },
+      "vorschlag": {
+        "enabled": true,
+        "reason": ""
+      },
+      "kummerkasten": {
+        "enabled": true,
+        "reason": ""
+      },
+      "verify": {
+        "enabled": true,
+        "reason": ""
+      },
+      "prefix": {
+        "enabled": true,
+        "reason": ""
+      },
+      "scheduledMessages": {
+        "enabled": true,
+        "reason": ""
+      },
+      "autoRoles": {
+        "enabled": true,
+        "reason": ""
+      },
+      "customCommands": {
+        "enabled": true,
+        "reason": ""
+      },
+      "dashboard": {
+        "enabled": true,
+        "reason": ""
+      }
+    },
+    "updatedAt": "2025-11-13T12:15:45.263Z",
+    "updatedBy": "901518853635444746",
+    "createdAt": "2025-11-13T11:39:07.973Z"
+  }
+]

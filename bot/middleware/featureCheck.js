@@ -9,34 +9,69 @@ function checkFeature(featureName) {
     return async (interaction) => {
         const settings = GlobalSettings.getSettings();
         
-        // Maintenance Mode Check
+        // Maintenance Mode Check (mit Admin-Bypass)
         if (settings.maintenanceMode) {
-            const embed = new EmbedBuilder()
-                .setColor('#FEE75C')
-                .setTitle('🔧 Wartungsmodus')
-                .setDescription(settings.maintenanceMessage || 'Der Bot befindet sich im Wartungsmodus.')
-                .setFooter({ text: 'Bitte versuche es später erneut' });
-            
-            await interaction.reply({ embeds: [embed], ephemeral: true });
-            return false;
+            // Prüfe ob User Admin-Bypass hat
+            if (!GlobalSettings.canBypassMaintenance(interaction.user.id)) {
+                const embed = new EmbedBuilder()
+                    .setColor('#ED4245')
+                    .setTitle('🔧 Wartungsmodus')
+                    .setDescription(settings.maintenanceMessage || 'Der Bot befindet sich im Wartungsmodus.')
+                    .setFooter({ text: 'Bitte versuche es später erneut' })
+                    .setTimestamp();
+                
+                await interaction.reply({ embeds: [embed], ephemeral: true });
+                return false;
+            }
         }
         
-        // Feature Check
-        if (!settings.features[featureName]?.enabled) {
-            const reason = settings.features[featureName]?.reason || 'Dieses Feature ist vorübergehend deaktiviert.';
-            
-            const embed = new EmbedBuilder()
-                .setColor('#ED4245')
-                .setTitle('❌ Feature deaktiviert')
-                .setDescription(`**${featureName}** ist derzeit deaktiviert.\n\n**Grund:** ${reason}`)
-                .setFooter({ text: 'Kontaktiere einen Administrator für weitere Informationen' });
-            
-            await interaction.reply({ embeds: [embed], ephemeral: true });
-            return false;
+        // Feature Check (auch mit Admin-Bypass)
+        if (!GlobalSettings.isFeatureEnabled(featureName)) {
+            // Admin-Bypass gilt auch für einzelne Features
+            if (!GlobalSettings.canBypassMaintenance(interaction.user.id)) {
+                const reason = settings.features[featureName]?.reason || 'Dieses Feature ist vorübergehend deaktiviert.';
+                
+                const embed = new EmbedBuilder()
+                    .setColor('#FEE75C')
+                    .setTitle('⚠️ Feature deaktiviert')
+                    .setDescription(`**${featureName}** ist derzeit deaktiviert.\n\n**Grund:** ${reason}`)
+                    .setFooter({ text: 'Kontaktiere einen Administrator für weitere Informationen' })
+                    .setTimestamp();
+                
+                await interaction.reply({ embeds: [embed], ephemeral: true });
+                return false;
+            }
         }
         
-        return true; // Feature ist verfügbar
+        return true; // Feature ist verfügbar oder User hat Bypass
     };
+}
+
+/**
+ * Prüft Dashboard-Zugriff
+ */
+function checkDashboardAccess(userId) {
+    const settings = GlobalSettings.getSettings();
+    
+    // Wartungsmodus aktiv + kein Bypass
+    if (settings.maintenanceMode && !GlobalSettings.canBypassMaintenance(userId)) {
+        return {
+            allowed: false,
+            inMaintenance: true,
+            message: settings.maintenanceMessage || 'Dashboard befindet sich im Wartungsmodus.'
+        };
+    }
+    
+    // Dashboard-Feature deaktiviert + kein Bypass
+    if (!GlobalSettings.isFeatureEnabled('dashboard') && !GlobalSettings.canBypassMaintenance(userId)) {
+        return {
+            allowed: false,
+            inMaintenance: false,
+            message: settings.features.dashboard?.reason || 'Dashboard ist temporär deaktiviert.'
+        };
+    }
+    
+    return { allowed: true, inMaintenance: false };
 }
 
 /**
@@ -59,4 +94,4 @@ function withFeatureCheck(featureName) {
     };
 }
 
-module.exports = { checkFeature, withFeatureCheck };
+module.exports = { checkFeature, withFeatureCheck, checkDashboardAccess };
