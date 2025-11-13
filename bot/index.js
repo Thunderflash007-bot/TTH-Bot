@@ -49,6 +49,10 @@ client.once('ready', () => {
     const AutoRoleHandler = require('./utils/autoRoleHandler');
     const autoRoleHandler = new AutoRoleHandler(client);
     client.autoRoleHandler = autoRoleHandler;
+    
+    // Starte Twitch Stream Checker
+    const { startTwitchChecker } = require('./utils/twitchChecker');
+    startTwitchChecker(client);
 });
 
 // Bot starten

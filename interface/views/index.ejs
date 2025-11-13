@@ -30,36 +30,114 @@
     <section class="hero">
         <div class="container">
             <h1><i class="fas fa-robot"></i> Willkommen beim TTH-Bot</h1>
-            <p class="subtitle">Dein All-in-One Discord Bot für Moderation, Tickets und mehr!</p>
+            <p class="subtitle">Dein professioneller All-in-One Discord Bot mit umfangreichem Web-Dashboard!</p>
             
             <div class="features">
                 <div class="feature-card">
                     <i class="fas fa-shield-alt"></i>
                     <h3>Moderation</h3>
-                    <p>Leistungsstarke Moderationstools mit Logging</p>
+                    <p>Leistungsstarke Moderationstools mit detailliertem Logging und Mute-System</p>
                 </div>
                 <div class="feature-card">
                     <i class="fas fa-ticket-alt"></i>
                     <h3>Ticket-System</h3>
-                    <p>Professionelles Support-Ticket-System</p>
+                    <p>Professionelles Support-System mit Claim, Assign & Live-Übersicht</p>
                 </div>
                 <div class="feature-card">
                     <i class="fas fa-chart-line"></i>
                     <h3>Level-System</h3>
-                    <p>Motiviere deine Community mit XP & Leveln</p>
+                    <p>XP & Level mit Auto-Rollen und individuellen Belohnungen</p>
                 </div>
                 <div class="feature-card">
                     <i class="fas fa-users"></i>
                     <h3>Willkommenssystem</h3>
-                    <p>Begrüße neue Mitglieder automatisch</p>
+                    <p>Automatische Begrüßung mit personalisierten Nachrichten & Variablen</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-user-shield"></i>
+                    <h3>Team-Management</h3>
+                    <p>Organisiere dein Team mit Rollen und Rängen (Owner bis Trial)</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-clock"></i>
+                    <h3>Scheduled Messages</h3>
+                    <p>Automatische Nachrichten - täglich, wöchentlich oder im Intervall</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-user-plus"></i>
+                    <h3>Auto-Rollen</h3>
+                    <p>Automatische Rollenvergabe bei Join, Level-Up, Zeit oder Boost</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-code"></i>
+                    <h3>Custom Commands</h3>
+                    <p>Eigene Commands mit Variablen, Embeds und Statistiken erstellen</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bullhorn"></i>
+                    <h3>Quick Announcements</h3>
+                    <p>Ankündigungen in mehrere Channels mit Mentions und Embeds</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>Bewerbungssystem</h3>
+                    <p>Strukturierte Team-Bewerbungen mit Modal-Forms</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-database"></i>
+                    <h3>Backup & Export</h3>
+                    <p>Vollständige Backups und Export aller wichtigen Daten</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-cogs"></i>
+                    <h3>Web-Dashboard</h3>
+                    <p>Übersichtliches Interface zur kompletten Bot-Verwaltung</p>
                 </div>
             </div>
 
             <% if (!user) { %>
-                <a href="/auth/discord" class="btn btn-large btn-discord">
-                    <i class="fab fa-discord"></i> Jetzt mit Discord verbinden
-                </a>
+                <div style="text-align: center; margin-top: 40px;">
+                    <a href="/auth/discord" class="btn btn-large btn-discord">
+                        <i class="fab fa-discord"></i> Jetzt mit Discord verbinden und loslegen
+                    </a>
+                </div>
+            <% } else { %>
+                <div style="text-align: center; margin-top: 40px;">
+                    <a href="/dashboard" class="btn btn-large btn-primary">
+                        <i class="fas fa-tachometer-alt"></i> Zum Dashboard
+                    </a>
+                </div>
             <% } %>
+        </div>
+    </section>
+
+    <section class="highlights" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 20px; color: white;">
+        <div class="container" style="text-align: center;">
+            <h2 style="font-size: 2.5em; margin-bottom: 20px;"><i class="fas fa-star"></i> Highlights</h2>
+            <p style="font-size: 1.2em; margin-bottom: 40px; opacity: 0.9;">Was TTH-Bot besonders macht</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto;">
+                <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px);">
+                    <i class="fas fa-bolt" style="font-size: 3em; margin-bottom: 15px;"></i>
+                    <h3>Blitzschnell</h3>
+                    <p>Optimierte Performance für sofortige Reaktionen</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px);">
+                    <i class="fas fa-paint-brush" style="font-size: 3em; margin-bottom: 15px;"></i>
+                    <h3>Modernes Design</h3>
+                    <p>Schöne Embeds und übersichtliches Dashboard</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px);">
+                    <i class="fas fa-sliders-h" style="font-size: 3em; margin-bottom: 15px;"></i>
+                    <h3>Hochgradig konfigurierbar</h3>
+                    <p>Passe alles nach deinen Wünschen an</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px);">
+                    <i class="fas fa-headset" style="font-size: 3em; margin-bottom: 15px;"></i>
+                    <h3>24/7 Online</h3>
+                    <p>Zuverlässig und immer erreichbar</p>
+                </div>
+            </div>
         </div>
     </section>
 

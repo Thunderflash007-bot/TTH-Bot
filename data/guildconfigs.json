@@ -18,6 +18,11 @@
       {
         "roleId": "1428104839933591593",
         "rank": "owner"
+      },
+      {
+        "roleId": "1438115159527653406",
+        "roleName": "Admin",
+        "rank": "Admin"
       }
     ],
     "supportRoleId": "1428104951988617388"

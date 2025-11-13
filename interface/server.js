@@ -49,6 +49,7 @@ app.use('/', require('./routes/index'));
 app.use('/auth', require('./routes/auth'));
 app.use('/api', require('./routes/api'));
 app.use('/dashboard', require('./routes/dashboard'));
+app.use('/admin', require('./routes/admin'));
 
 console.log('✅ JSON-Datenbank (Interface) initialisiert');
 

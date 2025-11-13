@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Panel - TTH-Bot</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .admin-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .status-online { background: #57F287; color: #000; }
+        .status-offline { background: #ED4245; color: #FFF; }
+        .severity-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .severity-option {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .severity-option:hover {
+            border-color: #5865F2;
+            background: #f8f9ff;
+        }
+        .severity-option.active {
+            border-color: #5865F2;
+            background: #5865F2;
+            color: white;
+        }
+        .severity-info { border-color: #5865F2; }
+        .severity-warning { border-color: #FEE75C; }
+        .severity-critical { border-color: #ED4245; }
+        .guild-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .guild-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+        .stat-box h3 {
+            font-size: 2.5em;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-crown"></i>
+                <span>TTH-Bot Admin Panel</span>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Zurück zum Dashboard
+                </a>
+                <a href="/auth/logout" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 30px; max-width: 1400px;">
+        <!-- Admin Header -->
+        <div class="admin-header">
+            <h1><i class="fas fa-crown"></i> Admin Control Panel</h1>
+            <p style="opacity: 0.9; margin-top: 10px;">
+                <i class="fas fa-user-shield"></i> Eingeloggt als: <strong><%= user.username %></strong>
+            </p>
+            <p style="opacity: 0.8; margin-top: 5px; font-size: 14px;">
+                <i class="fas fa-lock"></i> Dieser Bereich ist nur für dich sichtbar
+            </p>
+        </div>
+
+        <!-- Bot Status -->
+        <div class="admin-card">
+            <h2><i class="fas fa-heartbeat"></i> Bot Status</h2>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px;">
+                <div class="stat-box">
+                    <i class="fas fa-robot" style="font-size: 2em;"></i>
+                    <h3><%= botStatus.online ? 'Online' : 'Offline' %></h3>
+                    <p>Bot Status</p>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-server" style="font-size: 2em;"></i>
+                    <h3><%= botStatus.guilds ? botStatus.guilds.length : 0 %></h3>
+                    <p>Server</p>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-clock" style="font-size: 2em;"></i>
+                    <h3><%= botStatus.uptime || '0h' %></h3>
+                    <p>Uptime</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wartungsankündigung -->
+        <div class="admin-card">
+            <h2><i class="fas fa-tools"></i> Wartungsankündigung</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                Sende eine Wartungsankündigung an alle Log-Channels aller Server
+            </p>
+
+            <form id="maintenanceForm">
+                <div class="form-group">
+                    <label><i class="fas fa-heading"></i> Titel</label>
+                    <input type="text" id="maintenanceTitle" class="form-control" placeholder="z.B. Geplante Wartungsarbeiten" required>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> Nachricht</label>
+                    <textarea id="maintenanceMessage" class="form-control" rows="4" placeholder="Beschreibe die Wartungsarbeiten..." required></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> Startzeit</label>
+                        <input type="datetime-local" id="maintenanceStart" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-check"></i> Endzeit (geschätzt)</label>
+                        <input type="datetime-local" id="maintenanceEnd" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-exclamation-triangle"></i> Schweregrad</label>
+                    <div class="severity-selector">
+                        <div class="severity-option severity-info active" data-severity="info">
+                            <i class="fas fa-info-circle" style="font-size: 24px; display: block; margin-bottom: 5px;"></i>
+                            <strong>Info</strong><br>
+                            <small>Kleine Updates</small>
+                        </div>
+                        <div class="severity-option severity-warning" data-severity="warning">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 24px; display: block; margin-bottom: 5px;"></i>
+                            <strong>Warnung</strong><br>
+                            <small>Kurze Ausfälle</small>
+                        </div>
+                        <div class="severity-option severity-critical" data-severity="critical">
+                            <i class="fas fa-times-circle" style="font-size: 24px; display: block; margin-bottom: 5px;"></i>
+                            <strong>Kritisch</strong><br>
+                            <small>Längere Wartung</small>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px;">
+                    <i class="fas fa-broadcast-tower"></i> Ankündigung an alle Server senden
+                </button>
+            </form>
+
+            <div id="maintenanceResult" style="margin-top: 20px; display: none;"></div>
+        </div>
+
+        <!-- Global Broadcast -->
+        <div class="admin-card">
+            <h2><i class="fas fa-bullhorn"></i> Global Broadcast</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                Sende eine Nachricht an alle Server (wähle Channel-Typ)
+            </p>
+
+            <form id="broadcastForm">
+                <div class="form-group">
+                    <label><i class="fas fa-comment"></i> Nachricht</label>
+                    <textarea id="broadcastMessage" class="form-control" rows="3" placeholder="Deine Nachricht..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-hashtag"></i> Channel-Typ</label>
+                    <select id="broadcastChannelType" class="form-control">
+                        <option value="log">Log-Channels</option>
+                        <option value="general">General/Willkommens-Channels</option>
+                        <option value="all">Alle konfigurierten Channels</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%; padding: 15px;">
+                    <i class="fas fa-paper-plane"></i> Broadcast senden
+                </button>
+            </form>
+
+            <div id="broadcastResult" style="margin-top: 20px; display: none;"></div>
+        </div>
+
+        <!-- Server Liste -->
+        <div class="admin-card">
+            <h2><i class="fas fa-server"></i> Verbundene Server (<%= botStatus.guilds ? botStatus.guilds.length : 0 %>)</h2>
+            <div class="guild-list">
+                <% if (botStatus.guilds && botStatus.guilds.length > 0) { %>
+                    <% botStatus.guilds.forEach(guild => { %>
+                        <div class="guild-card">
+                            <i class="fas fa-server" style="font-size: 2em; margin-bottom: 10px;"></i>
+                            <h3><%= guild.name %></h3>
+                            <p style="opacity: 0.8; font-size: 14px; margin-top: 5px;">
+                                <i class="fas fa-users"></i> <%= guild.memberCount %> Mitglieder
+                            </p>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <p style="color: #6c757d; text-align: center; grid-column: 1/-1;">Keine Server gefunden</p>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Bot Controls -->
+        <div class="admin-card">
+            <h2><i class="fas fa-sliders-h"></i> Bot Controls</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
+                <button onclick="reloadBot()" class="btn btn-warning" style="padding: 15px;">
+                    <i class="fas fa-sync-alt"></i> Commands neu laden
+                </button>
+                <button onclick="getBotStats()" class="btn btn-info" style="padding: 15px;">
+                    <i class="fas fa-chart-bar"></i> Statistiken aktualisieren
+                </button>
+            </div>
+        </div>
+
+        <!-- Global Feature Toggles -->
+        <div class="admin-card">
+            <h2><i class="fas fa-toggle-on"></i> Globale Feature-Verwaltung</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                <i class="fas fa-info-circle"></i> Deaktiviere Features für <strong>alle Server</strong> bei Bugs oder Wartungsarbeiten
+            </p>
+
+            <!-- Maintenance Mode -->
+            <div style="background: linear-gradient(135deg, #ED4245 0%, #A02729 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 15px 0;">
+                    <i class="fas fa-exclamation-triangle"></i> Wartungsmodus
+                </h3>
+                <p style="opacity: 0.9; margin-bottom: 15px;">
+                    Deaktiviert <strong>ALLE</strong> Bot-Funktionen für alle Server
+                </p>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <button id="maintenanceModeBtn" onclick="toggleMaintenanceMode()" class="btn" style="background: white; color: #ED4245; flex: 1;">
+                        <i class="fas fa-power-off"></i> <span id="maintenanceModeText">Wartungsmodus aktivieren</span>
+                    </button>
+                    <div style="flex: 2;">
+                        <input type="text" id="maintenanceModeMessage" class="form-control" placeholder="Nachricht für User (optional)" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature Toggles -->
+            <div id="featureToggles" style="display: grid; gap: 15px;">
+                <!-- Wird via JavaScript geladen -->
+                <div style="text-align: center; padding: 20px; color: #6c757d;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                    <p style="margin-top: 10px;">Lade Features...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedSeverity = 'info';
+
+        // Severity Auswahl
+        document.querySelectorAll('.severity-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.severity-option').forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                selectedSeverity = this.dataset.severity;
+            });
+        });
+
+        // Wartungsankündigung
+        document.getElementById('maintenanceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sende...';
+
+            try {
+                const response = await fetch('/admin/maintenance-announcement', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: document.getElementById('maintenanceTitle').value,
+                        message: document.getElementById('maintenanceMessage').value,
+                        startTime: document.getElementById('maintenanceStart').value,
+                        endTime: document.getElementById('maintenanceEnd').value,
+                        severity: selectedSeverity
+                    })
+                });
+
+                const data = await response.json();
+                const resultDiv = document.getElementById('maintenanceResult');
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div style="background: #57F287; color: #000; padding: 15px; border-radius: 8px;">
+                            <i class="fas fa-check-circle"></i> <strong>Erfolgreich!</strong><br>
+                            Gesendet an ${data.sentTo} Server${data.failed > 0 ? `, ${data.failed} fehlgeschlagen` : ''}
+                        </div>
+                    `;
+                    e.target.reset();
+                } else {
+                    throw new Error(data.error);
+                }
+                
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                document.getElementById('maintenanceResult').innerHTML = `
+                    <div style="background: #ED4245; color: white; padding: 15px; border-radius: 8px;">
+                        <i class="fas fa-times-circle"></i> <strong>Fehler:</strong> ${error.message}
+                    </div>
+                `;
+                document.getElementById('maintenanceResult').style.display = 'block';
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-broadcast-tower"></i> Ankündigung an alle Server senden';
+        });
+
+        // Global Broadcast
+        document.getElementById('broadcastForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sende...';
+
+            try {
+                const response = await fetch('/admin/global-broadcast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: document.getElementById('broadcastMessage').value,
+                        channelType: document.getElementById('broadcastChannelType').value
+                    })
+                });
+
+                const data = await response.json();
+                const resultDiv = document.getElementById('broadcastResult');
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div style="background: #57F287; color: #000; padding: 15px; border-radius: 8px;">
+                            <i class="fas fa-check-circle"></i> Gesendet an ${data.sentTo} Server
+                        </div>
+                    `;
+                    e.target.reset();
+                } else {
+                    throw new Error(data.error);
+                }
+                
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                document.getElementById('broadcastResult').innerHTML = `
+                    <div style="background: #ED4245; color: white; padding: 15px; border-radius: 8px;">
+                        <i class="fas fa-times-circle"></i> ${error.message}
+                    </div>
+                `;
+                document.getElementById('broadcastResult').style.display = 'block';
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Broadcast senden';
+        });
+
+        // Bot neu laden
+        async function reloadBot() {
+            if (!confirm('Bot Commands neu laden?')) return;
+            
+            try {
+                const response = await fetch('/admin/reload-bot', { method: 'POST' });
+                const data = await response.json();
+                alert(data.success ? 'Commands neu geladen!' : 'Fehler: ' + data.error);
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+
+        // Bot Statistiken
+        async function getBotStats() {
+            try {
+                const response = await fetch('/admin/bot-stats');
+                const data = await response.json();
+                alert('Statistiken:\n' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+
+        // Feature Toggles laden
+        async function loadFeatureToggles() {
+            try {
+                const response = await fetch('/admin/api/global-settings');
+                const settings = await response.json();
+                
+                const container = document.getElementById('featureToggles');
+                
+                // Update Maintenance Mode Button
+                updateMaintenanceModeUI(settings.maintenanceMode);
+                
+                // Feature Categories
+                const categories = {
+                    'Ticket-System': ['tickets', 'ticketPriority', 'ticketForward'],
+                    'Moderation': ['warns', 'reports', 'ban', 'kick', 'clear'],
+                    'Projekte & Verwaltung': ['projects', 'ports', 'news'],
+                    'Kommunikation': ['twitch', 'vorschlag', 'kummerkasten'],
+                    'Verifizierung & Rollen': ['verify', 'prefix'],
+                    'Automation': ['scheduledMessages', 'autoRoles', 'customCommands'],
+                    'Dashboard': ['dashboard']
+                };
+                
+                const featureNames = {
+                    tickets: '🎫 Tickets',
+                    ticketPriority: '🔴 Ticket-Priorität',
+                    ticketForward: '➡️ Ticket-Weiterleitung',
+                    warns: '⚠️ Warn-System',
+                    reports: '📢 Report-System',
+                    ban: '🔨 Ban',
+                    kick: '👢 Kick',
+                    clear: '🧹 Clear Messages',
+                    projects: '🎮 Projekt-Management',
+                    ports: '🌐 Port-Verwaltung',
+                    news: '📰 News',
+                    twitch: '📺 Twitch-Notifications',
+                    vorschlag: '💡 Vorschläge',
+                    kummerkasten: '📬 Kummerkasten',
+                    verify: '✅ Verifizierung',
+                    prefix: '🏷️ Auto-Prefixes',
+                    scheduledMessages: '⏰ Geplante Nachrichten',
+                    autoRoles: '🎭 Auto-Rollen',
+                    customCommands: '🔧 Custom Commands',
+                    dashboard: '📊 Dashboard'
+                };
+                
+                let html = '';
+                
+                for (const [category, features] of Object.entries(categories)) {
+                    html += `
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                            <h3 style="margin: 0 0 15px 0; color: #5865F2;">
+                                <i class="fas fa-layer-group"></i> ${category}
+                            </h3>
+                            <div style="display: grid; gap: 10px;">
+                    `;
+                    
+                    features.forEach(feature => {
+                        const featureData = settings.features[feature];
+                        const enabled = featureData?.enabled ?? true;
+                        const reason = featureData?.reason || '';
+                        
+                        html += `
+                            <div style="background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${enabled ? '#57F287' : '#ED4245'};">
+                                <div style="flex: 1;">
+                                    <strong>${featureNames[feature] || feature}</strong>
+                                    ${!enabled && reason ? `<br><small style="color: #6c757d;">Grund: ${reason}</small>` : ''}
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <span style="font-size: 12px; color: ${enabled ? '#57F287' : '#ED4245'}; font-weight: 600;">
+                                        ${enabled ? '✅ AKTIV' : '❌ DEAKTIVIERT'}
+                                    </span>
+                                    <button onclick="toggleFeature('${feature}', ${!enabled})" class="btn btn-sm" style="background: ${enabled ? '#ED4245' : '#57F287'}; color: white; padding: 8px 15px;">
+                                        <i class="fas fa-${enabled ? 'ban' : 'check'}"></i> ${enabled ? 'Deaktivieren' : 'Aktivieren'}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('featureToggles').innerHTML = `
+                    <div style="background: #ED4245; color: white; padding: 15px; border-radius: 8px;">
+                        <i class="fas fa-exclamation-triangle"></i> Fehler beim Laden: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Feature Toggle
+        async function toggleFeature(featureName, enable) {
+            let reason = '';
+            
+            if (!enable) {
+                reason = prompt('Grund für Deaktivierung (wird Usern angezeigt):');
+                if (reason === null) return; // Abgebrochen
+            }
+            
+            const confirmMsg = enable 
+                ? `Möchtest du "${featureName}" wieder aktivieren?`
+                : `Möchtest du "${featureName}" für ALLE Server deaktivieren?\n\nGrund: ${reason}`;
+            
+            if (!confirm(confirmMsg)) return;
+            
+            try {
+                const response = await fetch(`/admin/api/global-settings/feature/${featureName}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        enabled: enable,
+                        reason: reason,
+                        userId: '<%= user.id %>'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(enable ? '✅ Feature aktiviert!' : '❌ Feature deaktiviert!');
+                    loadFeatureToggles();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Maintenance Mode Toggle
+        async function toggleMaintenanceMode() {
+            const btn = document.getElementById('maintenanceModeBtn');
+            const currentMode = btn.dataset.enabled === 'true';
+            const newMode = !currentMode;
+            
+            let message = '';
+            if (newMode) {
+                message = document.getElementById('maintenanceModeMessage').value || 
+                         'Der Bot befindet sich im Wartungsmodus. Bitte versuche es später erneut.';
+                
+                if (!confirm('⚠️ WARNUNG: Wartungsmodus aktivieren?\n\nALLE Bot-Funktionen werden auf ALLEN Servern deaktiviert!')) {
+                    return;
+                }
+            } else {
+                if (!confirm('Wartungsmodus beenden und alle Funktionen wieder aktivieren?')) {
+                    return;
+                }
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ändere...';
+            
+            try {
+                const response = await fetch('/admin/api/maintenance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        enabled: newMode,
+                        message: message,
+                        userId: '<%= user.id %>'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateMaintenanceModeUI(newMode);
+                    alert(newMode ? '⚠️ Wartungsmodus aktiviert!' : '✅ Wartungsmodus beendet!');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+                updateMaintenanceModeUI(currentMode);
+            }
+        }
+
+        function updateMaintenanceModeUI(enabled) {
+            const btn = document.getElementById('maintenanceModeBtn');
+            btn.dataset.enabled = enabled;
+            btn.disabled = false;
+            
+            if (enabled) {
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> <span id="maintenanceModeText">Wartungsmodus AKTIV - Deaktivieren</span>';
+                btn.style.background = '#57F287';
+                btn.style.color = '#000';
+            } else {
+                btn.innerHTML = '<i class="fas fa-power-off"></i> <span id="maintenanceModeText">Wartungsmodus aktivieren</span>';
+                btn.style.background = 'white';
+                btn.style.color = '#ED4245';
+            }
+        }
+
+        // Beim Laden
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFeatureToggles();
+        });
+    </script>
+</body>
+</html>

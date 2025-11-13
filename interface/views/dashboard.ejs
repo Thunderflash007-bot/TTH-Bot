@@ -19,6 +19,11 @@
                     <img src="<%= user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/img/default-avatar.png' %>" alt="Avatar" class="avatar-small">
                     <%= user.username %>
                 </span>
+                <% if (user.username === 'thunderflash.0.0.7') { %>
+                    <a href="/admin/secret-control-panel-x7k9m2p" class="btn btn-danger" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="fas fa-crown"></i> Admin
+                    </a>
+                <% } %>
                 <a href="/" class="btn btn-secondary">Home</a>
                 <a href="/auth/logout" class="btn btn-secondary">Logout</a>
             </div>
@@ -133,6 +138,9 @@
                         </button>
                         <button class="tab-btn" onclick="openTab(event, 'moderation')">
                             <i class="fas fa-shield-alt"></i> Moderation
+                        </button>
+                        <button class="tab-btn" onclick="openTab(event, 'verwaltung')">
+                            <i class="fas fa-clipboard-list"></i> Verwaltung
                         </button>
                         <button class="tab-btn" onclick="openTab(event, 'systems')">
                             <i class="fas fa-cogs"></i> Systeme
@@ -692,6 +700,39 @@
                                     </div>
 
                                     <div class="command-card">
+                                        <div class="command-icon" style="background: #FEE75C;">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div class="command-info">
+                                            <h4>/warn</h4>
+                                            <p>Warnt einen User (Auto-Ban bei 5 Warnungen)</p>
+                                            <span class="command-perm">Berechtigung: MODERATE_MEMBERS</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="command-card">
+                                        <div class="command-icon" style="background: #57F287;">
+                                            <i class="fas fa-list"></i>
+                                        </div>
+                                        <div class="command-info">
+                                            <h4>/warns</h4>
+                                            <p>Zeigt Warnungen eines Users</p>
+                                            <span class="command-perm">Berechtigung: MODERATE_MEMBERS</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="command-card">
+                                        <div class="command-icon" style="background: #57F287;">
+                                            <i class="fas fa-eraser"></i>
+                                        </div>
+                                        <div class="command-info">
+                                            <h4>/unwarn</h4>
+                                            <p>Entfernt eine Warnung (mit ID)</p>
+                                            <span class="command-perm">Berechtigung: MODERATE_MEMBERS</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="command-card">
                                         <div class="command-icon" style="background: #5865F2;">
                                             <i class="fas fa-broom"></i>
                                         </div>
@@ -708,6 +749,127 @@
                                 <i class="fas fa-exclamation-triangle"></i>
                                 <div>
                                     <strong>Hinweis:</strong> Alle Moderations-Aktionen werden automatisch geloggt und können später nachvollzogen werden.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verwaltung Tab (NEU) -->
+                    <div id="verwaltung" class="tab-content">
+                        <!-- Warns Management -->
+                        <div class="settings-section">
+                            <h2><i class="fas fa-exclamation-triangle"></i> Warnungen verwalten</h2>
+                            <p class="section-description">Übersicht aller aktiven Warnungen auf diesem Server.</p>
+                            
+                            <div id="warnsContainer" style="margin-top: 20px;">
+                                <div style="text-align: center; padding: 40px; color: #6c757d;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 2em;"></i>
+                                    <p style="margin-top: 10px;">Lade Warnungen...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reports Management -->
+                        <div class="settings-section" style="margin-top: 40px;">
+                            <h2><i class="fas fa-flag"></i> Reports verwalten</h2>
+                            <p class="section-description">Übersicht aller User- und Nachrichten-Reports.</p>
+                            
+                            <div id="reportsContainer" style="margin-top: 20px;">
+                                <div style="text-align: center; padding: 40px; color: #6c757d;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 2em;"></i>
+                                    <p style="margin-top: 10px;">Lade Reports...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Embed Builder -->
+                        <div class="settings-section" style="margin-top: 40px;">
+                            <h2><i class="fas fa-code"></i> Custom Embed Builder</h2>
+                            <p class="section-description">Erstelle professionelle Embeds für deinen Server.</p>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                                <!-- Embed Form -->
+                                <div style="background: white; padding: 25px; border-radius: 10px;">
+                                    <h3>Embed erstellen</h3>
+                                    <form id="embedBuilderForm" style="margin-top: 20px;">
+                                        <div class="form-group">
+                                            <label><i class="fas fa-hashtag"></i> Ziel-Channel</label>
+                                            <select id="embedChannel" class="form-control" required>
+                                                <option value="">Channel wählen...</option>
+                                                <% if (channels && channels.length > 0) { %>
+                                                    <% channels.forEach(channel => { %>
+                                                        <option value="<%= channel.id %>"># <%= channel.name %></option>
+                                                    <% }) %>
+                                                <% } %>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label><i class="fas fa-heading"></i> Titel</label>
+                                            <input type="text" id="embedTitle" class="form-control" placeholder="Embed Titel">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label><i class="fas fa-align-left"></i> Beschreibung</label>
+                                            <textarea id="embedDescription" class="form-control" rows="4" placeholder="Embed Beschreibung"></textarea>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label><i class="fas fa-palette"></i> Farbe</label>
+                                            <input type="color" id="embedColor" class="form-control" value="#5865F2">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label><i class="fas fa-user"></i> Author</label>
+                                            <input type="text" id="embedAuthor" class="form-control" placeholder="Optional">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label><i class="fas fa-sticky-note"></i> Footer</label>
+                                            <input type="text" id="embedFooter" class="form-control" placeholder="Optional">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label><i class="fas fa-image"></i> Thumbnail URL</label>
+                                            <input type="url" id="embedThumbnail" class="form-control" placeholder="https://...">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label><i class="fas fa-image"></i> Bild URL</label>
+                                            <input type="url" id="embedImage" class="form-control" placeholder="https://...">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label><i class="fas fa-link"></i> URL</label>
+                                            <input type="url" id="embedUrl" class="form-control" placeholder="https://...">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>
+                                                <input type="checkbox" id="embedTimestamp">
+                                                Zeitstempel hinzufügen
+                                            </label>
+                                        </div>
+
+                                        <div style="display: flex; gap: 10px;">
+                                            <button type="button" onclick="previewEmbed()" class="btn btn-secondary" style="flex: 1;">
+                                                <i class="fas fa-eye"></i> Vorschau
+                                            </button>
+                                            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                                <i class="fas fa-paper-plane"></i> Senden
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Embed Preview -->
+                                <div style="background: #2C2F33; padding: 25px; border-radius: 10px; color: white;">
+                                    <h3 style="color: white;">Live-Vorschau</h3>
+                                    <div id="embedPreview" style="margin-top: 20px;">
+                                        <div style="background: #36393F; padding: 20px; border-radius: 8px; border-left: 4px solid #5865F2;">
+                                            <p style="opacity: 0.7; text-align: center;">Fülle das Formular aus, um eine Vorschau zu sehen</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1347,6 +1509,97 @@ Verfügbare Variablen:
 
                     <!-- Tools Tab -->
                     <div id="tools" class="tab-content">
+                        <!-- Twitch Stream Notifications -->
+                        <div class="settings-section">
+                            <h2><i class="fab fa-twitch" style="color: #9146FF;"></i> Twitch Stream Benachrichtigungen</h2>
+                            <p class="section-description">Erhalte automatische Benachrichtigungen wenn ein Twitch-Streamer live geht.</p>
+                            
+                            <div class="info-box info-box-info" style="margin-bottom: 20px;">
+                                <i class="fas fa-lightbulb"></i>
+                                <div>
+                                    <strong>Hinweis:</strong> Twitch API Credentials müssen in der .env-Datei konfiguriert sein (TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET).
+                                    Erstelle eine App auf <a href="https://dev.twitch.tv/console/apps" target="_blank" style="color: #9146FF;">dev.twitch.tv/console/apps</a>
+                                </div>
+                            </div>
+
+                            <!-- Add Twitch Notification Form -->
+                            <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
+                                <h3 style="margin-bottom: 20px;"><i class="fas fa-plus-circle"></i> Twitch-Account hinzufügen</h3>
+                                
+                                <form id="addTwitchForm" class="settings-form">
+                                    <div class="form-group">
+                                        <label for="twitchUsername">
+                                            <i class="fab fa-twitch"></i> Twitch Username
+                                        </label>
+                                        <input type="text" id="twitchUsername" class="form-control" required placeholder="z.B. shroud">
+                                        <small>Gib den exakten Twitch-Username ein (ohne @)</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="twitchChannel">
+                                            <i class="fas fa-hashtag"></i> Benachrichtigungs-Channel
+                                        </label>
+                                        <select id="twitchChannel" class="form-control" required>
+                                            <option value="">Channel auswählen</option>
+                                            <% if (channels && channels.length > 0) { %>
+                                                <% channels.forEach(channel => { %>
+                                                    <option value="<%= channel.id %>">
+                                                        # <%= channel.name %>
+                                                    </option>
+                                                <% }) %>
+                                            <% } %>
+                                        </select>
+                                        <small>In diesem Channel werden die Stream-Benachrichtigungen gepostet</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="twitchMessage">
+                                            <i class="fas fa-comment"></i> Eigene Nachricht (optional)
+                                        </label>
+                                        <input type="text" id="twitchMessage" class="form-control" placeholder="z.B. 🔴 Stream ist live!">
+                                        <small>Leer lassen für Standard-Nachricht</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="twitchMention">
+                                            <i class="fas fa-at"></i> Rolle erwähnen (optional)
+                                        </label>
+                                        <select id="twitchMention" class="form-control">
+                                            <option value="">Keine Erwähnung</option>
+                                            <option value="@everyone">@everyone</option>
+                                            <option value="@here">@here</option>
+                                            <% if (roles && roles.length > 0) { %>
+                                                <% roles.forEach(role => { %>
+                                                    <% if (role.name !== '@everyone' && role.name !== 'TTH Bot') { %>
+                                                        <option value="<%= role.id %>">
+                                                            @ <%= role.name %>
+                                                        </option>
+                                                    <% } %>
+                                                <% }) %>
+                                            <% } %>
+                                        </select>
+                                        <small>Diese Rolle wird bei Stream-Start erwähnt</small>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary" style="background: #9146FF;">
+                                        <i class="fas fa-plus"></i> Twitch-Account hinzufügen
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Twitch Notifications List -->
+                            <div style="background: white; padding: 25px; border-radius: 10px;">
+                                <h3 style="margin-bottom: 20px;"><i class="fas fa-list"></i> Aktive Benachrichtigungen</h3>
+                                
+                                <div id="twitchNotificationsList">
+                                    <div style="text-align: center; padding: 20px; color: #6c757d;">
+                                        <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                                        <p style="margin-top: 10px;">Lade Twitch-Benachrichtigungen...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Backup & Restore -->
                         <div class="settings-section">
                             <h2><i class="fas fa-database"></i> Backup & Wiederherstellung</h2>
@@ -1507,6 +1760,14 @@ Verfügbare Variablen:
             
             document.getElementById(tabName).classList.add('active');
             evt.currentTarget.classList.add('active');
+            
+            // Auto-load data when switching to specific tabs
+            if (tabName === 'verwaltung') {
+                loadWarnings();
+                loadReports();
+            } else if (tabName === 'tools') {
+                loadTwitchNotifications();
+            }
         }
 
         // Test Welcome-Nachricht
@@ -1720,6 +1981,163 @@ Verfügbare Variablen:
             }
         }
 
+        // Twitch Notifications Functions
+        async function loadTwitchNotifications() {
+            try {
+                const response = await fetch(`/api/bot/guilds/${guildId}/twitch`);
+                const notifications = await response.json();
+                
+                const container = document.getElementById('twitchNotificationsList');
+                
+                if (notifications.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #6c757d;">
+                            <i class="fab fa-twitch" style="font-size: 48px; opacity: 0.3;"></i>
+                            <p style="margin-top: 15px;">Keine Twitch-Benachrichtigungen konfiguriert</p>
+                            <small>Füge einen Twitch-Account oben hinzu</small>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<div style="display: grid; gap: 15px;">';
+                
+                notifications.forEach(notif => {
+                    const statusColor = notif.enabled ? '#57F287' : '#6c757d';
+                    const statusIcon = notif.enabled ? 'fa-circle' : 'fa-pause-circle';
+                    
+                    html += `
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #9146FF; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 10px 0; color: #9146FF;">
+                                    <i class="fab fa-twitch"></i> ${notif.twitchUsername}
+                                </h4>
+                                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                    <div>
+                                        <small style="color: #6c757d;">Channel:</small><br>
+                                        <strong># ${notif.channelName}</strong>
+                                    </div>
+                                    ${notif.message ? `
+                                    <div>
+                                        <small style="color: #6c757d;">Nachricht:</small><br>
+                                        <strong>${notif.message}</strong>
+                                    </div>
+                                    ` : ''}
+                                    ${notif.mention ? `
+                                    <div>
+                                        <small style="color: #6c757d;">Erwähnung:</small><br>
+                                        <strong>${notif.mention}</strong>
+                                    </div>
+                                    ` : ''}
+                                    <div>
+                                        <small style="color: #6c757d;">Status:</small><br>
+                                        <strong style="color: ${statusColor};">
+                                            <i class="fas ${statusIcon}"></i> ${notif.enabled ? 'Aktiv' : 'Pausiert'}
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="toggleTwitchNotification('${notif.id}')" class="btn btn-sm" style="background: #5865F2; color: white;" title="${notif.enabled ? 'Pausieren' : 'Aktivieren'}">
+                                    <i class="fas ${notif.enabled ? 'fa-pause' : 'fa-play'}"></i>
+                                </button>
+                                <button onclick="deleteTwitchNotification('${notif.id}')" class="btn btn-sm" style="background: #ED4245; color: white;" title="Löschen">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('twitchNotificationsList').innerHTML = `
+                    <div class="info-box info-box-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div>Fehler beim Laden: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function toggleTwitchNotification(id) {
+            try {
+                const response = await fetch(`/api/bot/guilds/${guildId}/twitch/${id}/toggle`, {
+                    method: 'PATCH'
+                });
+                
+                if (response.ok) {
+                    loadTwitchNotifications();
+                } else {
+                    alert('❌ Fehler beim Umschalten');
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        async function deleteTwitchNotification(id) {
+            if (!confirm('Möchtest du diese Twitch-Benachrichtigung wirklich löschen?')) return;
+            
+            try {
+                const response = await fetch(`/api/bot/guilds/${guildId}/twitch/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadTwitchNotifications();
+                    alert('✅ Twitch-Benachrichtigung gelöscht!');
+                } else {
+                    alert('❌ Fehler beim Löschen');
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Add Twitch Notification Form Handler
+        document.getElementById('addTwitchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('twitchUsername').value.trim();
+            const channelId = document.getElementById('twitchChannel').value;
+            const message = document.getElementById('twitchMessage').value.trim() || null;
+            const mentionSelect = document.getElementById('twitchMention');
+            let mention = mentionSelect.value;
+            
+            // Convert role ID to mention format
+            if (mention && mention !== '@everyone' && mention !== '@here') {
+                mention = `<@&${mention}>`;
+            }
+            
+            try {
+                const response = await fetch(`/api/bot/guilds/${guildId}/twitch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        twitchUsername: username,
+                        channelId: channelId,
+                        message: message,
+                        mention: mention || null
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Twitch-Benachrichtigung hinzugefügt!');
+                    e.target.reset();
+                    loadTwitchNotifications();
+                } else {
+                    alert('❌ Fehler: ' + (data.error || 'Unbekannter Fehler'));
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        });
+
         // Send Announcement
         async function sendAnnouncement(event) {
             event.preventDefault();
@@ -1815,6 +2233,281 @@ Verfügbare Variablen:
                 alert('❌ Fehler: ' + error.message);
             }
         }
+
+        // Lade Warnungen
+        async function loadWarnings() {
+            try {
+                const response = await fetch(`/api/bot/guilds/${guildId}/warnings`);
+                const warnings = await response.json();
+                
+                const container = document.getElementById('warnsContainer');
+                
+                if (warnings.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #57F287;">
+                            <i class="fas fa-check-circle" style="font-size: 3em;"></i>
+                            <h3>Keine aktiven Warnungen</h3>
+                            <p>Dieser Server hat aktuell keine Warnungen.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Gruppiere Warnungen nach User
+                const userWarnings = {};
+                warnings.forEach(warn => {
+                    if (!userWarnings[warn.userId]) {
+                        userWarnings[warn.userId] = {
+                            userName: warn.userName,
+                            userTag: warn.userTag,
+                            warns: []
+                        };
+                    }
+                    userWarnings[warn.userId].warns.push(warn);
+                });
+                
+                let html = '<div style="display: grid; gap: 20px;">';
+                
+                for (const userId in userWarnings) {
+                    const data = userWarnings[userId];
+                    const warnCount = data.warns.length;
+                    const color = warnCount >= 5 ? '#ED4245' : warnCount >= 3 ? '#FEE75C' : '#5865F2';
+                    
+                    html += `
+                        <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid ${color};">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <div>
+                                    <h3 style="margin: 0;">${data.userTag}</h3>
+                                    <small style="color: #6c757d;">User-ID: ${userId}</small>
+                                </div>
+                                <div style="background: ${color}; color: white; padding: 8px 15px; border-radius: 20px; font-weight: bold;">
+                                    ${warnCount} Warnung(en)
+                                </div>
+                            </div>
+                            <div style="display: grid; gap: 10px;">
+                    `;
+                    
+                    data.warns.forEach(warn => {
+                        const date = new Date(warn.timestamp).toLocaleString('de-DE');
+                        html += `
+                            <div style="background: #F8F9FA; padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <strong>📝 ${warn.reason}</strong><br>
+                                    <small style="color: #6c757d;">
+                                        von ${warn.moderatorTag} • ${date}<br>
+                                        ID: <code>${warn.id}</code>
+                                    </small>
+                                </div>
+                                <button onclick="removeWarning('${warn.id}')" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">
+                                    <i class="fas fa-trash"></i> Entfernen
+                                </button>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div></div>';
+                }
+                
+                html += '</div>';
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('warnsContainer').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #ED4245;">
+                        <i class="fas fa-times-circle" style="font-size: 3em;"></i>
+                        <p>Fehler beim Laden der Warnungen</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Warnung entfernen
+        async function removeWarning(warnId) {
+            if (!confirm('Warnung wirklich entfernen?')) return;
+            
+            try {
+                const response = await fetch(`/api/bot/guilds/${guildId}/warnings/${warnId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Warnung entfernt!');
+                    loadWarnings();
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Lade Reports
+        async function loadReports() {
+            try {
+                const response = await fetch(`/api/bot/guilds/${guildId}/reports`);
+                const reports = await response.json();
+                
+                const container = document.getElementById('reportsContainer');
+                
+                if (reports.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #57F287;">
+                            <i class="fas fa-check-circle" style="font-size: 3em;"></i>
+                            <h3>Keine Reports</h3>
+                            <p>Keine Meldungen vorhanden.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<div style="display: grid; gap: 15px;">';
+                
+                reports.reverse().forEach(report => {
+                    const date = new Date(report.timestamp).toLocaleString('de-DE');
+                    const typeColor = report.type === 'user' ? '#ED4245' : '#FEE75C';
+                    const typeIcon = report.type === 'user' ? 'fa-user' : 'fa-comment';
+                    const typeText = report.type === 'user' ? 'User-Meldung' : 'Nachrichten-Meldung';
+                    
+                    html += `
+                        <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid ${typeColor};">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                        <span style="background: ${typeColor}; color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px;">
+                                            <i class="fas ${typeIcon}"></i> ${typeText}
+                                        </span>
+                                        <span style="color: #6c757d; font-size: 12px;">${date}</span>
+                                    </div>
+                                    <p style="margin: 10px 0;"><strong>📝 Grund:</strong> ${report.reason}</p>
+                                    <p style="margin: 5px 0; font-size: 14px; color: #6c757d;">
+                                        <strong>👤 Reporter:</strong> ${report.reporterTag || 'Unbekannt'}<br>
+                                        <strong>🎯 Ziel:</strong> ${report.targetTag || report.targetId}<br>
+                                        <strong>🆔 Report-ID:</strong> <code>${report.id}</code>
+                                    </p>
+                                </div>
+                                <span style="background: ${report.status === 'open' ? '#57F287' : '#6c757d'}; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px;">
+                                    ${report.status === 'open' ? 'Offen' : 'Geschlossen'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('reportsContainer').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #ED4245;">
+                        <i class="fas fa-times-circle" style="font-size: 3em;"></i>
+                        <p>Fehler beim Laden der Reports</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Embed Preview
+        function previewEmbed() {
+            const title = document.getElementById('embedTitle').value;
+            const description = document.getElementById('embedDescription').value;
+            const color = document.getElementById('embedColor').value;
+            const author = document.getElementById('embedAuthor').value;
+            const footer = document.getElementById('embedFooter').value;
+            const thumbnail = document.getElementById('embedThumbnail').value;
+            const image = document.getElementById('embedImage').value;
+            const timestamp = document.getElementById('embedTimestamp').checked;
+            
+            let html = `<div style="background: #36393F; padding: 15px; border-radius: 8px; border-left: 4px solid ${color};">`;
+            
+            if (author) {
+                html += `<div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">${author}</div>`;
+            }
+            
+            if (title) {
+                html += `<div style="font-size: 16px; font-weight: bold; color: ${color}; margin-bottom: 8px;">${title}</div>`;
+            }
+            
+            if (description) {
+                html += `<div style="margin-bottom: 10px; white-space: pre-wrap;">${description}</div>`;
+            }
+            
+            if (thumbnail) {
+                html += `<img src="${thumbnail}" style="max-width: 80px; border-radius: 4px; margin: 10px 0;">`;
+            }
+            
+            if (image) {
+                html += `<img src="${image}" style="max-width: 100%; border-radius: 4px; margin: 10px 0;">`;
+            }
+            
+            if (footer || timestamp) {
+                html += `<div style="font-size: 11px; opacity: 0.7; margin-top: 10px;">`;
+                if (footer) html += footer;
+                if (footer && timestamp) html += ' • ';
+                if (timestamp) html += new Date().toLocaleString('de-DE');
+                html += `</div>`;
+            }
+            
+            html += '</div>';
+            
+            document.getElementById('embedPreview').innerHTML = html;
+        }
+
+        // Embed senden
+        document.getElementById('embedBuilderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const channelId = document.getElementById('embedChannel').value;
+            if (!channelId) {
+                alert('Bitte wähle einen Channel!');
+                return;
+            }
+            
+            const embedData = {
+                title: document.getElementById('embedTitle').value || null,
+                description: document.getElementById('embedDescription').value || null,
+                color: document.getElementById('embedColor').value,
+                author: document.getElementById('embedAuthor').value || null,
+                footer: document.getElementById('embedFooter').value || null,
+                thumbnail: document.getElementById('embedThumbnail').value || null,
+                image: document.getElementById('embedImage').value || null,
+                url: document.getElementById('embedUrl').value || null,
+                timestamp: document.getElementById('embedTimestamp').checked
+            };
+            
+            try {
+                const response = await fetch(`/api/bot/embed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        guildId,
+                        channelId,
+                        embed: embedData
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Embed wurde gesendet!');
+                    document.getElementById('embedBuilderForm').reset();
+                    document.getElementById('embedPreview').innerHTML = `
+                        <div style="background: #36393F; padding: 20px; border-radius: 8px; border-left: 4px solid #5865F2;">
+                            <p style="opacity: 0.7; text-align: center;">Fülle das Formular aus, um eine Vorschau zu sehen</p>
+                        </div>
+                    `;
+                } else {
+                    alert('❌ Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        });
+
+        // Lade Daten beim Tab-Wechsel
+        const originalOpenTab = window.openTab;
+        window.openTab = function(evt, tabName) {
+            originalOpenTab(evt, tabName);
+            
+            if (tabName === 'verwaltung') {
+                loadWarnings();
+                loadReports();
+            }
+        };
     </script>
 </body>
 </html>

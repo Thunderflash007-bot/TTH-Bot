@@ -1,6 +1,26 @@
+const { EmbedBuilder } = require('discord.js');
+const GlobalSettings = require('../models/GlobalSettings');
+
 module.exports = {
     name: 'interactionCreate',
     async execute(interaction, client) {
+        // Global Maintenance Mode Check
+        const settings = GlobalSettings.getSettings();
+        
+        if (settings.maintenanceMode && interaction.user.id !== '465490004601151498') {
+            const embed = new EmbedBuilder()
+                .setColor('#FEE75C')
+                .setTitle('🔧 Wartungsmodus')
+                .setDescription(settings.maintenanceMessage || 'Der Bot befindet sich im Wartungsmodus.')
+                .setFooter({ text: 'Bitte versuche es später erneut' });
+            
+            if (interaction.replied || interaction.deferred) {
+                return await interaction.followUp({ embeds: [embed], ephemeral: true });
+            } else {
+                return await interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+        }
+        
         // Slash Commands
         if (interaction.isChatInputCommand()) {
             const command = client.commands.get(interaction.commandName);

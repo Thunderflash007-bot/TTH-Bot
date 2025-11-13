@@ -65,9 +65,11 @@ module.exports = {
             const existingIndex = config.teamRoles.findIndex(r => r.roleId === role.id);
             if (existingIndex !== -1) {
                 config.teamRoles[existingIndex].rank = rank;
+                config.teamRoles[existingIndex].roleName = role.name;
             } else {
                 config.teamRoles.push({
                     roleId: role.id,
+                    roleName: role.name,
                     rank: rank
                 });
             }

@@ -28,7 +28,13 @@ class GuildConfig {
             muteRoleId: null,
             levelUpMessage: true,
             levelUpChannelId: null,
-            teamRoles: []
+            teamRoles: [],
+            verificationPasscode: null,
+            verificationRoleId: null,
+            verificationChannelId: null,
+            nicknamePrefixes: [],
+            kummerkastenChannelId: null,
+            kummerkastenSupportRoleId: null
         };
         return this.db.insert(defaultConfig);
     }

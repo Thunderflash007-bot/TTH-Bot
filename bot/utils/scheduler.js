@@ -21,7 +21,7 @@ class MessageScheduler {
 
     async checkScheduledMessages() {
         try {
-            const messages = ScheduledMessage.find({ enabled: true });
+            const messages = await ScheduledMessage.find({ enabled: true });
             
             for (const msg of messages) {
                 if (this.shouldSendNow(msg)) {
