@@ -19,7 +19,10 @@
                     <img src="<%= user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/img/default-avatar.png' %>" alt="Avatar" class="avatar-small">
                     <%= user.username %>
                 </span>
-                <% if (user.username === 'thunderflash.0.0.7') { %>
+                <a href="/dashboard/report-bug" class="btn btn-primary" style="background: linear-gradient(135deg, #ed4245 0%, #c93c3e 100%);">
+                    <i class="fas fa-bug"></i> Bug Report
+                </a>
+                <% if (user.id === '901518853635444746') { %>
                     <a href="/admin/secret-control-panel-x7k9m2p" class="btn btn-danger" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                         <i class="fas fa-crown"></i> Admin
                     </a>

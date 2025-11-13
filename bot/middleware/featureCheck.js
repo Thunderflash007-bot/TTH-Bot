@@ -52,9 +52,15 @@ function checkFeature(featureName) {
  */
 function checkDashboardAccess(userId) {
     const settings = GlobalSettings.getSettings();
+    const hasBypass = GlobalSettings.canBypassMaintenance(userId);
+    
+    console.log('[checkDashboardAccess] UserID:', userId);
+    console.log('[checkDashboardAccess] Maintenance Mode:', settings.maintenanceMode);
+    console.log('[checkDashboardAccess] Has Bypass:', hasBypass);
+    console.log('[checkDashboardAccess] Bypass List:', settings.adminBypass);
     
     // Wartungsmodus aktiv + kein Bypass
-    if (settings.maintenanceMode && !GlobalSettings.canBypassMaintenance(userId)) {
+    if (settings.maintenanceMode && !hasBypass) {
         return {
             allowed: false,
             inMaintenance: true,

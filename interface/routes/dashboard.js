@@ -34,6 +34,7 @@ function maintenanceCheck(req, res, next) {
     next();
 }
 
+// Dashboard Hauptseite (ohne spezifischen Server)
 router.get('/', isAuthenticated, maintenanceCheck, async (req, res) => {
     try {
         const guilds = req.user.guilds.filter(guild => 
@@ -63,6 +64,96 @@ router.get('/', isAuthenticated, maintenanceCheck, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('Fehler beim Laden der Guilds');
+    }
+});
+
+// Bug Report Routes müssen VOR dem :id route sein
+router.get('/report-bug', isAuthenticated, (req, res) => {
+    res.render('report-bug', { user: req.user });
+});
+
+router.post('/report-bug', isAuthenticated, async (req, res) => {
+    console.log('\n🐛 ===== BUG REPORT SUBMISSION ===== ');
+    console.log('User:', req.user.username, '(' + req.user.id + ')');
+    console.log('Body:', req.body);
+    
+    try {
+        const BugReport = require(path.join(__dirname, '../../bot/models/BugReport'));
+        const { title, description, steps, expected, actual } = req.body;
+        
+        console.log('📝 Parsed data:', { title, description, steps, expected, actual });
+        
+        if (!title || !description) {
+            console.log('❌ Validation failed: Missing title or description');
+            return res.status(400).json({ error: 'Titel und Beschreibung sind erforderlich' });
+        }
+        
+        console.log('📦 Creating bug report...');
+        
+        const bug = BugReport.create({
+            userId: req.user.id,
+            username: `${req.user.username}#${req.user.discriminator}`,
+            title,
+            description,
+            steps: steps || null,
+            expectedBehavior: expected || null,
+            actualBehavior: actual || null
+        });
+        
+        console.log('✅ Bug Report created:', bug.id);
+        console.log('📄 Bug data:', JSON.stringify(bug, null, 2));
+        
+        // Sende DM an Admin
+        console.log('📨 Attempting to send admin DM...');
+        try {
+            const botInstance = require('../utils/botClient').client;
+            console.log('🤖 Bot instance:', botInstance ? 'Found' : 'Not found');
+            console.log('🤖 Bot ready:', botInstance?.isReady() || false);
+            
+            if (botInstance?.isReady() && botInstance.users) {
+                console.log('👤 Fetching admin user (ID: 901518853635444746)...');
+                const admin = await botInstance.users.fetch('901518853635444746').catch(err => {
+                    console.error('❌ Failed to fetch admin user:', err.message);
+                    return null;
+                });
+                console.log('👤 Admin:', admin ? `${admin.username} (${admin.id})` : 'Not found');
+                
+                if (admin) {
+                    console.log('📤 Sending DM to admin...');
+                    await admin.send({
+                        embeds: [{
+                            title: '🐛 Neuer Bug Report (Web)',
+                            color: 0xed4245,
+                            fields: [
+                                { name: 'Bug ID', value: bug.id, inline: true },
+                                { name: 'User', value: `${bug.username} (${bug.userId})`, inline: true },
+                                { name: 'Titel', value: title, inline: false },
+                                { name: 'Beschreibung', value: description.substring(0, 500), inline: false }
+                            ],
+                            timestamp: new Date()
+                        }]
+                    });
+                    console.log('✅ Admin DM sent successfully');
+                } else {
+                    console.log('⚠️ Admin user not found');
+                }
+            } else {
+                console.log('⚠️ Bot instance or users not available');
+            }
+        } catch (dmError) {
+            console.error('❌ Error sending admin DM:', dmError.message);
+            console.error('Stack:', dmError.stack);
+        }
+        
+        console.log('✅ Sending success response');
+        console.log('===== BUG REPORT COMPLETE =====\n');
+        res.json({ success: true, bugId: bug.id });
+    } catch (error) {
+        console.error('❌ ===== BUG REPORT ERROR =====');
+        console.error('Error:', error.message);
+        console.error('Stack:', error.stack);
+        console.error('===== ERROR END =====\n');
+        res.status(500).json({ error: error.message || 'Unbekannter Fehler' });
     }
 });
 

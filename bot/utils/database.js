@@ -97,6 +97,12 @@ class Database {
         return this.find(query).length;
     }
 
+    // Lade Daten neu
+    reload() {
+        this.data = this.load();
+        return this.data;
+    }
+
     // Sortiere und limitiere
     findSorted(query = {}, sortField = 'createdAt', limit = null) {
         let results = this.find(query);

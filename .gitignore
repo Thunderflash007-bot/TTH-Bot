@@ -9,6 +9,9 @@ package-lock.json
 logs/
 *.log
 
+# Backups
+backups/
+
 # OS
 .DS_Store
 Thumbs.db

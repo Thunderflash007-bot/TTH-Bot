@@ -312,6 +312,24 @@
                         User mit Bypass-Rechten können den Bot auch im Wartungsmodus und bei deaktivierten Features nutzen.
                     </p>
                     
+                    <!-- Self Bypass Toggle -->
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #5865F2;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #5865F2;">
+                                    <i class="fas fa-user"></i> Dein Bypass-Status
+                                </strong>
+                                <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 13px;">
+                                    Aktiviere Bypass für deinen eigenen Account
+                                </p>
+                            </div>
+                            <label class="switch" style="margin: 0;">
+                                <input type="checkbox" id="selfBypassToggle" onchange="toggleSelfBypass()">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
                     <!-- Bypass User Liste -->
                     <div id="bypassUsersList" style="margin-bottom: 15px;">
                         <div style="text-align: center; padding: 10px; color: #6c757d;">
@@ -347,6 +365,154 @@
                         <p style="margin-top: 10px;">Lade Features...</p>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Bug Reports -->
+        <div class="admin-card">
+            <h2><i class="fas fa-bug"></i> Bug Reports</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                Alle gemeldeten Bugs von Usern - Setze Prioritäten und verwalte den Status
+            </p>
+
+            <!-- Filter & Stats -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;">
+                <div class="stat-box" style="background: linear-gradient(135deg, #ED4245 0%, #A02729 100%); padding: 15px;">
+                    <div style="font-size: 14px; opacity: 0.9;">Offen</div>
+                    <h3 style="font-size: 2em; margin: 5px 0;" id="bugStatsOpen">0</h3>
+                </div>
+                <div class="stat-box" style="background: linear-gradient(135deg, #FEE75C 0%, #F5A623 100%); padding: 15px;">
+                    <div style="font-size: 14px; opacity: 0.9;">In Bearbeitung</div>
+                    <h3 style="font-size: 2em; margin: 5px 0;" id="bugStatsInvestigating">0</h3>
+                </div>
+                <div class="stat-box" style="background: linear-gradient(135deg, #57F287 0%, #3BA55D 100%); padding: 15px;">
+                    <div style="font-size: 14px; opacity: 0.9;">Behoben</div>
+                    <h3 style="font-size: 2em; margin: 5px 0;" id="bugStatsFixed">0</h3>
+                </div>
+                <div class="stat-box" style="background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%); padding: 15px;">
+                    <div style="font-size: 14px; opacity: 0.9;">Gesamt</div>
+                    <h3 style="font-size: 2em; margin: 5px 0;" id="bugStatsTotal">0</h3>
+                </div>
+            </div>
+
+            <!-- Bug Reports Liste -->
+            <div id="bugReportsList">
+                <div style="text-align: center; padding: 40px; color: #6c757d;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 32px;"></i>
+                    <p style="margin-top: 15px;">Lade Bug Reports...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schnelle Bot-Kontrolle -->
+        <div class="admin-card">
+            <h2><i class="fas fa-robot"></i> Bot Schnellzugriff</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                Wichtige Bot-Funktionen direkt steuern
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <button onclick="restartBot()" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px;">
+                    <i class="fas fa-sync-alt"></i> Bot Neustarten
+                </button>
+                
+                <button onclick="clearCache()" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px;">
+                    <i class="fas fa-broom"></i> Cache Leeren
+                </button>
+                
+                <button onclick="syncCommands()" class="btn" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 15px;">
+                    <i class="fas fa-terminal"></i> Commands Synchronisieren
+                </button>
+                
+                <button onclick="showBotLogs()" class="btn" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 15px;">
+                    <i class="fas fa-file-alt"></i> Bot Logs Anzeigen
+                </button>
+            </div>
+            
+            <div id="botLogsContainer" style="display: none; margin-top: 20px;">
+                <h3><i class="fas fa-scroll"></i> Bot Logs (letzte 100 Zeilen)</h3>
+                <div style="background: #1e1f22; color: #dcddde; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px;">
+                    <pre id="botLogsContent" style="margin: 0; white-space: pre-wrap;">Lade Logs...</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Verwaltung -->
+        <div class="admin-card">
+            <h2><i class="fas fa-users"></i> User Verwaltung</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                Suche und verwalte User-Daten
+            </p>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="userSearchInput" placeholder="User-ID oder Username eingeben..." 
+                       style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 5px;">
+                <button onclick="searchUser()" class="btn" style="background: #5865F2; color: white; padding: 12px 30px;">
+                    <i class="fas fa-search"></i> Suchen
+                </button>
+            </div>
+            
+            <div id="userSearchResults"></div>
+        </div>
+
+        <!-- Globale Statistiken -->
+        <div class="admin-card">
+            <h2><i class="fas fa-chart-bar"></i> Globale Statistiken</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                Überblick über alle Bot-Aktivitäten
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div class="stat-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-server" style="font-size: 24px; margin-bottom: 10px;"></i>
+                    <h3 id="totalServers">0</h3>
+                    <div style="font-size: 14px;">Gesamt Server</div>
+                </div>
+                
+                <div class="stat-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fas fa-users" style="font-size: 24px; margin-bottom: 10px;"></i>
+                    <h3 id="totalUsers">0</h3>
+                    <div style="font-size: 14px;">Gesamt User</div>
+                </div>
+                
+                <div class="stat-box" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-ticket-alt" style="font-size: 24px; margin-bottom: 10px;"></i>
+                    <h3 id="totalTickets">0</h3>
+                    <div style="font-size: 14px;">Gesamt Tickets</div>
+                </div>
+                
+                <div class="stat-box" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <i class="fas fa-terminal" style="font-size: 24px; margin-bottom: 10px;"></i>
+                    <h3 id="totalCommands">0</h3>
+                    <div style="font-size: 14px;">Commands Ausgeführt</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Management -->
+        <div class="admin-card">
+            <h2><i class="fas fa-database"></i> Datenbank Verwaltung</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                Backup und Wiederherstellung der Datenbank
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <button onclick="createBackup()" class="btn" style="background: linear-gradient(135deg, #57F287 0%, #3BA55D 100%); color: white; padding: 15px;">
+                    <i class="fas fa-download"></i> Backup Erstellen
+                </button>
+                
+                <button onclick="showBackups()" class="btn" style="background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%); color: white; padding: 15px;">
+                    <i class="fas fa-history"></i> Backups Anzeigen
+                </button>
+                
+                <button onclick="cleanupOldData()" class="btn" style="background: linear-gradient(135deg, #FEE75C 0%, #F5A623 100%); color: #000; padding: 15px;">
+                    <i class="fas fa-trash-alt"></i> Alte Daten Bereinigen
+                </button>
+            </div>
+            
+            <div id="backupsList" style="display: none; margin-top: 20px;">
+                <h3><i class="fas fa-folder"></i> Verfügbare Backups</h3>
+                <div id="backupsContent"></div>
             </div>
         </div>
 
@@ -477,24 +643,6 @@
             <p style="color: #6c757d; margin-bottom: 20px;">
                 <i class="fas fa-info-circle"></i> Deaktiviere Features für <strong>alle Server</strong> bei Bugs oder Wartungsarbeiten
             </p>
-
-            <!-- Maintenance Mode -->
-            <div style="background: linear-gradient(135deg, #ED4245 0%, #A02729 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 15px 0;">
-                    <i class="fas fa-exclamation-triangle"></i> Wartungsmodus
-                </h3>
-                <p style="opacity: 0.9; margin-bottom: 15px;">
-                    Deaktiviert <strong>ALLE</strong> Bot-Funktionen für alle Server
-                </p>
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <button id="maintenanceModeBtn" onclick="toggleMaintenanceMode()" class="btn" style="background: white; color: #ED4245; flex: 1;">
-                        <i class="fas fa-power-off"></i> <span id="maintenanceModeText">Wartungsmodus aktivieren</span>
-                    </button>
-                    <div style="flex: 2;">
-                        <input type="text" id="maintenanceModeMessage" class="form-control" placeholder="Nachricht für User (optional)" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">
-                    </div>
-                </div>
-            </div>
 
             <!-- Feature Toggles -->
             <div id="featureToggles" style="display: grid; gap: 15px;">
@@ -773,73 +921,10 @@
             }
         }
 
-        // Maintenance Mode Toggle
-        async function toggleMaintenanceMode() {
-            const btn = document.getElementById('maintenanceModeBtn');
-            const currentMode = btn.dataset.enabled === 'true';
-            const newMode = !currentMode;
-            
-            let message = '';
-            if (newMode) {
-                message = document.getElementById('maintenanceModeMessage').value || 
-                         'Der Bot befindet sich im Wartungsmodus. Bitte versuche es später erneut.';
-                
-                if (!confirm('⚠️ WARNUNG: Wartungsmodus aktivieren?\n\nALLE Bot-Funktionen werden auf ALLEN Servern deaktiviert!')) {
-                    return;
-                }
-            } else {
-                if (!confirm('Wartungsmodus beenden und alle Funktionen wieder aktivieren?')) {
-                    return;
-                }
-            }
-            
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ändere...';
-            
-            try {
-                const response = await fetch('/admin/api/maintenance', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        enabled: newMode,
-                        message: message,
-                        userId: '<%= user.id %>'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    updateMaintenanceModeUI(newMode);
-                    alert(newMode ? '⚠️ Wartungsmodus aktiviert!' : '✅ Wartungsmodus beendet!');
-                } else {
-                    throw new Error(data.error);
-                }
-            } catch (error) {
-                alert('❌ Fehler: ' + error.message);
-                updateMaintenanceModeUI(currentMode);
-            }
-        }
-
-        function updateMaintenanceModeUI(enabled) {
-            const btn = document.getElementById('maintenanceModeBtn');
-            btn.dataset.enabled = enabled;
-            btn.disabled = false;
-            
-            if (enabled) {
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> <span id="maintenanceModeText">Wartungsmodus AKTIV - Deaktivieren</span>';
-                btn.style.background = '#57F287';
-                btn.style.color = '#000';
-            } else {
-                btn.innerHTML = '<i class="fas fa-power-off"></i> <span id="maintenanceModeText">Wartungsmodus aktivieren</span>';
-                btn.style.background = 'white';
-                btn.style.color = '#ED4245';
-            }
-        }
-
         // Beim Laden
         document.addEventListener('DOMContentLoaded', () => {
             loadGlobalSettings();
+            loadBugReports();
         });
 
         // Load Global Settings (Wartungsmodus + Features)
@@ -851,10 +936,17 @@
                 // Wartungsmodus UI aktualisieren
                 const maintenanceToggle = document.getElementById('maintenanceModeToggle');
                 maintenanceToggle.checked = settings.maintenanceMode;
-                document.getElementById('maintenanceModeMessage').value = settings.maintenanceMessage || '';
+                
+                const maintenanceMessageField = document.getElementById('maintenanceModeMessage');
+                if (maintenanceMessageField) {
+                    maintenanceMessageField.value = settings.maintenanceMessage || '';
+                }
                 
                 if (settings.maintenanceMode) {
-                    document.getElementById('maintenanceModeSettings').style.display = 'block';
+                    const settingsDiv = document.getElementById('maintenanceModeSettings');
+                    if (settingsDiv) {
+                        settingsDiv.style.display = 'block';
+                    }
                 }
                 
                 // Feature Toggles laden
@@ -862,6 +954,11 @@
                 
                 // Bypass User laden
                 loadBypassUsers(settings.adminBypass || []);
+                
+                // Self-Bypass Toggle setzen
+                const currentUserId = '<%= user.id %>';
+                const selfBypassToggle = document.getElementById('selfBypassToggle');
+                selfBypassToggle.checked = settings.adminBypass && settings.adminBypass.includes(currentUserId);
             } catch (error) {
                 console.error('Fehler beim Laden der Settings:', error);
             }
@@ -985,11 +1082,6 @@
         async function removeBypassUser(userId) {
             const currentUserId = '<%= user.id %>';
             
-            if (userId === currentUserId) {
-                alert('❌ Du kannst dich nicht selbst entfernen!');
-                return;
-            }
-            
             if (!confirm('⚠️ Bypass-Rechte für diesen User entfernen?')) {
                 return;
             }
@@ -1014,6 +1106,34 @@
             }
         }
 
+        // Self-Bypass Toggle
+        async function toggleSelfBypass() {
+            const selfBypassToggle = document.getElementById('selfBypassToggle');
+            const currentUserId = '<%= user.id %>';
+            const action = selfBypassToggle.checked ? 'add' : 'remove';
+            
+            try {
+                const response = await fetch('/admin/admin-bypass', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUserId, action })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(action === 'add' ? '✅ Bypass aktiviert! Du hast jetzt Zugriff während Wartungsmodus.' : '⚠️ Bypass deaktiviert! Du wirst bei Wartungsmodus blockiert.');
+                    loadBypassUsers(data.adminBypass);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+                // Toggle zurücksetzen bei Fehler
+                selfBypassToggle.checked = !selfBypassToggle.checked;
+            }
+        }
+
         // Wartungsmodus Toggle
         document.getElementById('maintenanceModeToggle').addEventListener('change', function() {
             const settingsDiv = document.getElementById('maintenanceModeSettings');
@@ -1031,6 +1151,8 @@
             
             if (!enabled || confirm(enabled ? '⚠️ Wartungsmodus aktivieren? Alle User verlieren Zugriff!' : 'Wartungsmodus deaktivieren?')) {
                 try {
+                    console.log('[Frontend] Sende Wartungsmodus-Request:', { enabled, message });
+                    
                     const response = await fetch('/admin/toggle-maintenance', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1039,15 +1161,21 @@
                     
                     const data = await response.json();
                     
+                    console.log('[Frontend] Response erhalten:', data);
+                    
                     if (data.success) {
                         alert(enabled ? '🔧 Wartungsmodus AKTIVIERT! Bot-Status: Wartung' : '✅ Wartungsmodus BEENDET!');
                         if (!enabled) {
                             document.getElementById('maintenanceModeSettings').style.display = 'none';
                         }
+                        
+                        // Lade Settings neu um sicherzustellen, dass UI synchron ist
+                        setTimeout(() => loadGlobalSettings(), 500);
                     } else {
                         throw new Error(data.error);
                     }
                 } catch (error) {
+                    console.error('[Frontend] Fehler:', error);
                     alert('❌ Fehler: ' + error.message);
                     document.getElementById('maintenanceModeToggle').checked = !enabled;
                 }
@@ -1141,6 +1269,501 @@
                 event.target.checked = !enabled; // Revert
             }
         }
+
+        // Bug Reports laden
+        async function loadBugReports() {
+            try {
+                const response = await fetch('/admin/bug-reports');
+                const reports = await response.json();
+                
+                // Statistiken aktualisieren
+                document.getElementById('bugStatsTotal').textContent = reports.length;
+                document.getElementById('bugStatsOpen').textContent = reports.filter(r => r.status === 'open').length;
+                document.getElementById('bugStatsInvestigating').textContent = reports.filter(r => r.status === 'investigating').length;
+                document.getElementById('bugStatsFixed').textContent = reports.filter(r => r.status === 'fixed').length;
+                
+                const container = document.getElementById('bugReportsList');
+                
+                if (reports.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 60px; color: #6c757d;">
+                            <i class="fas fa-check-circle" style="font-size: 64px; opacity: 0.3;"></i>
+                            <h3 style="margin-top: 20px;">Keine Bug Reports</h3>
+                            <p>Aktuell wurden keine Bugs gemeldet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<div style="display: grid; gap: 20px;">';
+                
+                reports.forEach(report => {
+                    const priorityColors = {
+                        low: '#5865F2',
+                        medium: '#FEE75C',
+                        high: '#F5A623',
+                        critical: '#ED4245'
+                    };
+                    
+                    const priorityLabels = {
+                        low: '🟢 Niedrig',
+                        medium: '🟡 Mittel',
+                        high: '🟠 Hoch',
+                        critical: '🔴 Kritisch'
+                    };
+                    
+                    const statusColors = {
+                        open: '#ED4245',
+                        investigating: '#FEE75C',
+                        fixed: '#57F287',
+                        closed: '#6c757d',
+                        wontfix: '#99AAB5'
+                    };
+                    
+                    const statusLabels = {
+                        open: 'Offen',
+                        investigating: 'In Bearbeitung',
+                        fixed: 'Behoben',
+                        closed: 'Geschlossen',
+                        wontfix: 'Wird nicht behoben'
+                    };
+                    
+                    html += `
+                        <div style="background: white; border-radius: 10px; padding: 20px; border-left: 4px solid ${priorityColors[report.priority]};">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                        <span style="background: #f8f9fa; padding: 4px 12px; border-radius: 6px; font-family: monospace; font-size: 13px; font-weight: bold;">${report.id}</span>
+                                        <span style="background: ${priorityColors[report.priority]}; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">${priorityLabels[report.priority]}</span>
+                                        <span style="background: ${statusColors[report.status]}; color: ${report.status === 'open' || report.status === 'fixed' ? 'white' : '#2C2F33'}; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">${statusLabels[report.status]}</span>
+                                    </div>
+                                    <h3 style="margin: 0 0 10px 0; color: #2C2F33;">${report.title}</h3>
+                                    <p style="margin: 0 0 10px 0; color: #6c757d; font-size: 14px;">${report.description}</p>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 13px; color: #6c757d;">
+                                        <div><i class="fas fa-user"></i> ${report.username}</div>
+                                        <div><i class="fas fa-server"></i> ${report.guildName}</div>
+                                        <div><i class="fas fa-clock"></i> ${new Date(report.createdAt).toLocaleString('de-DE')}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; margin-left: 20px;">
+                                    <button onclick="showBugDetails('${report.id}')" class="btn btn-sm" style="background: #5865F2; color: white; padding: 8px 16px;">
+                                        <i class="fas fa-eye"></i> Details
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Actions -->
+                            <div style="display: flex; gap: 10px; padding-top: 15px; border-top: 1px solid #f0f0f0;">
+                                <select onchange="updateBugPriority('${report.id}', this.value)" style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                                    <option value="">Priorität ändern...</option>
+                                    <option value="low" ${report.priority === 'low' ? 'selected' : ''}>🟢 Niedrig</option>
+                                    <option value="medium" ${report.priority === 'medium' ? 'selected' : ''}>🟡 Mittel</option>
+                                    <option value="high" ${report.priority === 'high' ? 'selected' : ''}>🟠 Hoch</option>
+                                    <option value="critical" ${report.priority === 'critical' ? 'selected' : ''}>🔴 Kritisch</option>
+                                </select>
+                                
+                                <select onchange="updateBugStatus('${report.id}', this.value)" style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                                    <option value="">Status ändern...</option>
+                                    <option value="open" ${report.status === 'open' ? 'selected' : ''}>Offen</option>
+                                    <option value="investigating" ${report.status === 'investigating' ? 'selected' : ''}>In Bearbeitung</option>
+                                    <option value="fixed" ${report.status === 'fixed' ? 'selected' : ''}>Behoben</option>
+                                    <option value="closed" ${report.status === 'closed' ? 'selected' : ''}>Geschlossen</option>
+                                    <option value="wontfix" ${report.status === 'wontfix' ? 'selected' : ''}>Wird nicht behoben</option>
+                                </select>
+                                
+                                <button onclick="deleteBugReport('${report.id}')" class="btn btn-sm" style="background: #ED4245; color: white; padding: 6px 12px; margin-left: auto;">
+                                    <i class="fas fa-trash"></i> Löschen
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Bug Reports:', error);
+                document.getElementById('bugReportsList').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #ED4245;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 48px;"></i>
+                        <p style="margin-top: 15px;">Fehler beim Laden der Bug Reports</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Bug Priority ändern
+        async function updateBugPriority(id, priority) {
+            if (!priority) return;
+            
+            try {
+                const response = await fetch(`/admin/bug-reports/${id}/priority`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ priority })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Priorität aktualisiert!');
+                    loadBugReports();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Bug Status ändern
+        async function updateBugStatus(id, status) {
+            if (!status) return;
+            
+            const note = prompt('Optional: Notiz hinzufügen (wird dem User angezeigt):');
+            
+            try {
+                const response = await fetch(`/admin/bug-reports/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status, note })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Status aktualisiert!');
+                    loadBugReports();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Bug Details anzeigen
+        function showBugDetails(id) {
+            fetch(`/admin/bug-reports`)
+                .then(res => res.json())
+                .then(reports => {
+                    const report = reports.find(r => r.id === id);
+                    if (!report) return;
+                    
+                    let detailsHTML = `
+                        <div style="max-width: 600px;">
+                            <h2 style="margin-bottom: 20px;">${report.title}</h2>
+                            
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                <strong>Bug-ID:</strong> ${report.id}<br>
+                                <strong>Gemeldet von:</strong> ${report.username} (${report.userId})<br>
+                                <strong>Server:</strong> ${report.guildName}<br>
+                                <strong>Erstellt:</strong> ${new Date(report.createdAt).toLocaleString('de-DE')}<br>
+                                <strong>Aktualisiert:</strong> ${new Date(report.updatedAt).toLocaleString('de-DE')}
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <strong>Beschreibung:</strong>
+                                <p>${report.description}</p>
+                            </div>
+                    `;
+                    
+                    if (report.steps) {
+                        detailsHTML += `
+                            <div style="margin-bottom: 15px;">
+                                <strong>Schritte zur Reproduktion:</strong>
+                                <p style="white-space: pre-wrap;">${report.steps}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    if (report.expectedBehavior) {
+                        detailsHTML += `
+                            <div style="margin-bottom: 15px;">
+                                <strong>Erwartetes Verhalten:</strong>
+                                <p>${report.expectedBehavior}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    if (report.actualBehavior) {
+                        detailsHTML += `
+                            <div style="margin-bottom: 15px;">
+                                <strong>Tatsächliches Verhalten:</strong>
+                                <p>${report.actualBehavior}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    if (report.notes && report.notes.length > 0) {
+                        detailsHTML += `
+                            <div style="margin-bottom: 15px;">
+                                <strong>Notizen:</strong>
+                                <div style="margin-top: 10px;">
+                        `;
+                        report.notes.forEach(note => {
+                            detailsHTML += `
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+                                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">${new Date(note.timestamp).toLocaleString('de-DE')}</div>
+                                    <div>${note.text}</div>
+                                </div>
+                            `;
+                        });
+                        detailsHTML += '</div></div>';
+                    }
+                    
+                    detailsHTML += '</div>';
+                    
+                    // Zeige in einem Alert (oder später in einem Modal)
+                    const win = window.open('', 'Bug Details', 'width=700,height=800');
+                    win.document.write(`
+                        <html>
+                        <head>
+                            <title>Bug Report Details - ${report.id}</title>
+                            <style>
+                                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; }
+                                h2 { color: #2C2F33; }
+                                strong { color: #5865F2; }
+                                p { color: #6c757d; line-height: 1.6; }
+                            </style>
+                        </head>
+                        <body>${detailsHTML}</body>
+                        </html>
+                    `);
+                });
+        }
+
+        // Bug Report löschen
+        async function deleteBugReport(id) {
+            if (!confirm('⚠️ Bug Report wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden!')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/bug-reports/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Bug Report gelöscht!');
+                    loadBugReports();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // === NEUE ADMIN FUNKTIONEN ===
+
+        // Bot neustarten
+        async function restartBot() {
+            if (!confirm('⚠️ Bot wirklich neu starten? Dies kann einige Sekunden dauern.')) return;
+            
+            try {
+                const response = await fetch('/admin/bot/restart', { method: 'POST' });
+                const data = await response.json();
+                alert(data.success ? '✅ Bot wird neu gestartet...' : '❌ Fehler: ' + data.error);
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Cache leeren
+        async function clearCache() {
+            if (!confirm('⚠️ Cache wirklich leeren?')) return;
+            
+            try {
+                const response = await fetch('/admin/bot/clear-cache', { method: 'POST' });
+                const data = await response.json();
+                alert(data.success ? '✅ Cache geleert!' : '❌ Fehler: ' + data.error);
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Commands synchronisieren
+        async function syncCommands() {
+            if (!confirm('⚠️ Commands mit Discord synchronisieren?')) return;
+            
+            try {
+                const response = await fetch('/admin/bot/sync-commands', { method: 'POST' });
+                const data = await response.json();
+                alert(data.success ? '✅ Commands synchronisiert!' : '❌ Fehler: ' + data.error);
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Bot Logs anzeigen
+        async function showBotLogs() {
+            const container = document.getElementById('botLogsContainer');
+            const content = document.getElementById('botLogsContent');
+            
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            content.textContent = 'Lade Logs...';
+            
+            try {
+                const response = await fetch('/admin/bot/logs');
+                const data = await response.json();
+                
+                if (data.success) {
+                    content.textContent = data.logs || 'Keine Logs verfügbar';
+                } else {
+                    content.textContent = 'Fehler beim Laden der Logs';
+                }
+            } catch (error) {
+                content.textContent = 'Fehler: ' + error.message;
+            }
+        }
+
+        // User suchen
+        async function searchUser() {
+            const query = document.getElementById('userSearchInput').value.trim();
+            const results = document.getElementById('userSearchResults');
+            
+            if (!query) {
+                alert('❌ Bitte User-ID oder Username eingeben');
+                return;
+            }
+            
+            results.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Suche...</p>';
+            
+            try {
+                const response = await fetch(`/admin/users/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.success && data.user) {
+                    const user = data.user;
+                    results.innerHTML = `
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                            <h3><i class="fas fa-user"></i> ${user.username}</h3>
+                            <p><strong>ID:</strong> ${user.id}</p>
+                            <p><strong>Bot:</strong> ${user.bot ? 'Ja' : 'Nein'}</p>
+                            <p><strong>Erstellt:</strong> ${new Date(user.createdTimestamp).toLocaleString('de-DE')}</p>
+                            <div style="margin-top: 15px;">
+                                <button onclick="banUser('${user.id}')" class="btn" style="background: #ED4245; color: white; margin-right: 10px;">
+                                    <i class="fas fa-ban"></i> Bannen
+                                </button>
+                                <button onclick="getUserStats('${user.id}')" class="btn" style="background: #5865F2; color: white;">
+                                    <i class="fas fa-chart-line"></i> Statistiken
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = '<p style="color: #ED4245;">❌ User nicht gefunden</p>';
+                }
+            } catch (error) {
+                results.innerHTML = '<p style="color: #ED4245;">❌ Fehler: ' + error.message + '</p>';
+            }
+        }
+
+        // Backup erstellen
+        async function createBackup() {
+            if (!confirm('📦 Backup der Datenbank erstellen?')) return;
+            
+            try {
+                const response = await fetch('/admin/database/backup', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ Backup erstellt!\n\nDatei: ${data.filename}\nGröße: ${data.size}`);
+                } else {
+                    alert('❌ Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Backups anzeigen
+        async function showBackups() {
+            const container = document.getElementById('backupsList');
+            const content = document.getElementById('backupsContent');
+            
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            content.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Lade Backups...</p>';
+            
+            try {
+                const response = await fetch('/admin/database/backups');
+                const data = await response.json();
+                
+                if (data.success && data.backups.length > 0) {
+                    content.innerHTML = data.backups.map(backup => `
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${backup.filename}</strong><br>
+                                <small>${backup.size} - ${backup.date}</small>
+                            </div>
+                            <button onclick="restoreBackup('${backup.filename}')" class="btn" style="background: #5865F2; color: white;">
+                                <i class="fas fa-undo"></i> Wiederherstellen
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    content.innerHTML = '<p>Keine Backups gefunden</p>';
+                }
+            } catch (error) {
+                content.innerHTML = '<p style="color: #ED4245;">❌ Fehler: ' + error.message + '</p>';
+            }
+        }
+
+        // Alte Daten bereinigen
+        async function cleanupOldData() {
+            if (!confirm('⚠️ Alte Daten bereinigen?\n\n- Geschlossene Tickets (älter als 30 Tage)\n- Abgelehnte Applications\n- Alte Logs')) return;
+            
+            try {
+                const response = await fetch('/admin/database/cleanup', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ Bereinigung abgeschlossen!\n\n${data.removed} Einträge entfernt`);
+                } else {
+                    alert('❌ Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Fehler: ' + error.message);
+            }
+        }
+
+        // Globale Stats laden
+        async function loadGlobalStats() {
+            try {
+                const response = await fetch('/admin/stats/global');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalServers').textContent = data.stats.servers || 0;
+                    document.getElementById('totalUsers').textContent = data.stats.users || 0;
+                    document.getElementById('totalTickets').textContent = data.stats.tickets || 0;
+                    document.getElementById('totalCommands').textContent = data.stats.commands || 0;
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden der globalen Stats:', error);
+            }
+        }
+
+        // Stats beim Laden aktualisieren
+        document.addEventListener('DOMContentLoaded', () => {
+            loadGlobalStats();
+            // Alle 30 Sekunden aktualisieren
+            setInterval(loadGlobalStats, 30000);
+        });
     </script>
 </body>
 </html>

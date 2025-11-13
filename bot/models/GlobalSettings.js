@@ -60,10 +60,13 @@ class GlobalSettings {
     }
 
     getSettings() {
+        // Lade immer frisch aus der Datenbank
+        this.db.reload();
         return this.findOne({ id: 'global' });
     }
 
     updateFeature(featureName, enabled, reason, userId) {
+        this.db.reload();
         const settings = this.getSettings();
         
         if (settings.features[featureName]) {
@@ -72,20 +75,37 @@ class GlobalSettings {
             settings.updatedAt = new Date().toISOString();
             settings.updatedBy = userId;
             
-            return this.db.updateOne({ id: 'global' }, settings);
+            const result = this.db.updateOne({ id: 'global' }, settings);
+            this.db.reload();
+            return result;
         }
         
         return null;
     }
 
     setMaintenanceMode(enabled, message, userId) {
+        this.db.reload();
         const settings = this.getSettings();
+        
+        console.log('[GlobalSettings] setMaintenanceMode VOR Update:', {
+            maintenanceMode: settings.maintenanceMode,
+            enabled: enabled
+        });
+        
         settings.maintenanceMode = enabled;
         if (message) settings.maintenanceMessage = message;
         settings.updatedAt = new Date().toISOString();
         settings.updatedBy = userId;
         
-        return this.db.updateOne({ id: 'global' }, settings);
+        const result = this.db.updateOne({ id: 'global' }, settings);
+        this.db.reload();
+        
+        console.log('[GlobalSettings] setMaintenanceMode NACH Update:', {
+            maintenanceMode: result.maintenanceMode,
+            saved: result !== null
+        });
+        
+        return result;
     }
 
     isFeatureEnabled(featureName) {
@@ -104,7 +124,11 @@ class GlobalSettings {
 
     canBypassMaintenance(userId) {
         const settings = this.getSettings();
-        return settings.adminBypass && settings.adminBypass.includes(userId);
+        const hasAccess = settings.adminBypass && settings.adminBypass.includes(userId);
+        console.log('[canBypassMaintenance] UserID:', userId);
+        console.log('[canBypassMaintenance] Bypass List:', settings.adminBypass);
+        console.log('[canBypassMaintenance] Has Access:', hasAccess);
+        return hasAccess;
     }
 
     addAdminBypass(userId) {
@@ -127,7 +151,9 @@ class GlobalSettings {
     }
 
     save(settings) {
-        return this.db.updateOne({ id: 'global' }, settings);
+        const result = this.db.updateOne({ id: 'global' }, settings);
+        this.db.reload();
+        return result;
     }
 }
 

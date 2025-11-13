@@ -172,11 +172,46 @@
             text-decoration: none;
             font-weight: 500;
             transition: transform 0.3s, box-shadow 0.3s;
+            margin: 10px;
         }
 
         .back-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .admin-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #ED4245 0%, #A02729 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 10px;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(237, 66, 69, 0.4);
+        }
+
+        .admin-notice {
+            background: linear-gradient(135deg, #FEE75C 0%, #F5A623 100%);
+            color: #2C2F33;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .admin-notice i {
+            font-size: 20px;
         }
 
         .status-indicator {
@@ -256,6 +291,19 @@
                     <i class="fas fa-clock"></i> Bitte versuche es in einigen Minuten erneut.
                 </p>
             </div>
+
+            <% if (user && user.username === 'thunderflash.0.0.7') { %>
+                <div class="admin-notice">
+                    <i class="fas fa-user-shield"></i>
+                    Du bist Administrator - Du hast Zugriff auf das Admin-Panel
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <a href="/admin/secret-control-panel-x7k9m2p" class="admin-btn">
+                        <i class="fas fa-tools"></i> Zum Admin-Panel
+                    </a>
+                </div>
+            <% } %>
 
             <a href="/" class="back-btn">
                 <i class="fas fa-home"></i> Zurück zur Startseite

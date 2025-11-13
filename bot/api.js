@@ -385,8 +385,14 @@ function startBotAPI(client) {
         try {
             const GlobalSettings = require('./models/GlobalSettings');
             const settings = GlobalSettings.getSettings();
+            console.log('[API] Admin Settings abgerufen:', {
+                maintenanceMode: settings.maintenanceMode,
+                adminBypass: settings.adminBypass,
+                featureCount: Object.keys(settings.features || {}).length
+            });
             res.json(settings);
         } catch (error) {
+            console.error('[API] Fehler beim Laden der Settings:', error);
             res.status(500).json({ error: error.message });
         }
     });
@@ -397,7 +403,18 @@ function startBotAPI(client) {
             const { enabled, message, userId } = req.body;
             const GlobalSettings = require('./models/GlobalSettings');
             
-            GlobalSettings.setMaintenanceMode(enabled, message, userId);
+            console.log('[API] ========== WARTUNGSMODUS UPDATE START ==========');
+            console.log('[API] Request Body:', { enabled, message, userId });
+            
+            const beforeSettings = GlobalSettings.getSettings();
+            console.log('[API] Status VOR Update:', beforeSettings.maintenanceMode);
+            
+            const result = GlobalSettings.setMaintenanceMode(enabled, message, userId);
+            console.log('[API] Update Result:', result ? 'SUCCESS' : 'FAILED');
+            
+            const afterSettings = GlobalSettings.getSettings();
+            console.log('[API] Status NACH Update:', afterSettings.maintenanceMode);
+            console.log('[API] ========== WARTUNGSMODUS UPDATE ENDE ==========');
             
             // Bot-Status aktualisieren
             if (enabled) {
@@ -405,15 +422,22 @@ function startBotAPI(client) {
                     activities: [{ name: '🔧 Wartungsmodus', type: 0 }],
                     status: 'dnd'
                 });
+                console.log('[API] Bot-Status gesetzt: Wartungsmodus');
             } else {
                 await botClient.user.setPresence({
                     activities: [{ name: '/help | TTH-Bot', type: 0 }],
                     status: 'online'
                 });
+                console.log('[API] Bot-Status gesetzt: Online');
             }
             
-            res.json({ success: true, maintenanceMode: enabled });
+            res.json({ 
+                success: true, 
+                maintenanceMode: afterSettings.maintenanceMode,
+                settings: afterSettings
+            });
         } catch (error) {
+            console.error('[API] FEHLER beim Wartungsmodus-Update:', error);
             res.status(500).json({ error: error.message });
         }
     });
@@ -739,6 +763,340 @@ function startBotAPI(client) {
             GlobalSettings.setMaintenanceMode(enabled, message, userId);
             
             res.json({ success: true, settings: GlobalSettings.getSettings() });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+
+    // Bug Reports - Get all
+    app.get('/api/admin/bug-reports', async (req, res) => {
+        try {
+            const BugReport = require('./models/BugReport');
+            const reports = BugReport.findAll();
+            
+            // Sortiere nach Datum (neueste zuerst)
+            reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            res.json(reports);
+        } catch (error) {
+            console.error('API Error - Bug Reports:', error);
+            res.status(500).json({ error: error.message });
+        }
+    });
+
+    // Bug Reports - Update Priority
+    app.patch('/api/admin/bug-reports/:id/priority', async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { priority } = req.body;
+            
+            const BugReport = require('./models/BugReport');
+            const updated = BugReport.updatePriority(id, priority);
+            
+            if (updated) {
+                res.json({ success: true, report: updated });
+            } else {
+                res.status(404).json({ error: 'Bug Report nicht gefunden' });
+            }
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+
+    // Bug Reports - Update Status
+    app.patch('/api/admin/bug-reports/:id/status', async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { status, note } = req.body;
+            
+            const BugReport = require('./models/BugReport');
+            const updated = BugReport.updateStatus(id, status, note);
+            
+            if (updated) {
+                res.json({ success: true, report: updated });
+            } else {
+                res.status(404).json({ error: 'Bug Report nicht gefunden' });
+            }
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+
+    // Bug Reports - Add Note
+    app.post('/api/admin/bug-reports/:id/note', async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { note } = req.body;
+            
+            const BugReport = require('./models/BugReport');
+            const updated = BugReport.addNote(id, note);
+            
+            if (updated) {
+                res.json({ success: true, report: updated });
+            } else {
+                res.status(404).json({ error: 'Bug Report nicht gefunden' });
+            }
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+
+    // Bug Reports - Delete
+    app.delete('/api/admin/bug-reports/:id', async (req, res) => {
+        try {
+            const { id } = req.params;
+            
+            const BugReport = require('./models/BugReport');
+            const deleted = BugReport.delete(id);
+            
+            if (deleted) {
+                res.json({ success: true });
+            } else {
+                res.status(404).json({ error: 'Bug Report nicht gefunden' });
+            }
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+    
+    // === NEUE ADMIN API ENDPUNKTE ===
+    
+    // Bot neustarten
+    app.post('/api/admin/restart', async (req, res) => {
+        try {
+            console.log('🔄 Admin requested bot restart');
+            
+            // Check if running under PM2
+            if (process.env.PM2_HOME || process.env.pm_id !== undefined) {
+                console.log('✅ Running under PM2, performing restart...');
+                res.json({ success: true, message: 'Bot wird neu gestartet...' });
+                
+                setTimeout(() => {
+                    console.log('🔄 Initiating PM2 restart...');
+                    process.exit(0); // PM2 will auto-restart
+                }, 1000);
+            } else {
+                // Not running under PM2 - use restart script
+                console.log('⚠️ Not running under PM2, using restart script...');
+                const { spawn } = require('child_process');
+                const path = require('path');
+                
+                res.json({ success: true, message: 'Bot wird neu gestartet...' });
+                
+                setTimeout(() => {
+                    console.log('🔄 Executing restart script...');
+                    const scriptPath = path.join(__dirname, '../restart.sh');
+                    
+                    // Make script executable
+                    const { execSync } = require('child_process');
+                    try {
+                        execSync(`chmod +x "${scriptPath}"`);
+                    } catch (err) {
+                        console.log('⚠️ Could not chmod restart script:', err.message);
+                    }
+                    
+                    // Spawn detached process to run restart script
+                    const child = spawn('bash', [scriptPath], {
+                        detached: true,
+                        stdio: 'ignore'
+                    });
+                    child.unref();
+                    
+                    console.log('✅ Restart script spawned, exiting...');
+                    process.exit(0);
+                }, 1000);
+            }
+        } catch (error) {
+            console.error('❌ Restart failed:', error);
+            res.status(500).json({ 
+                success: false, 
+                error: error.message,
+                message: 'Restart fehlgeschlagen. Bitte PM2 verwenden: npm run pm2:start'
+            });
+        }
+    });
+    
+    // Cache leeren
+    app.post('/api/admin/clear-cache', async (req, res) => {
+        try {
+            console.log('🧹 Clearing cache...');
+            
+            // Lade alle Database-Instanzen neu
+            const Database = require('./utils/database');
+            const GlobalSettings = require('./models/GlobalSettings');
+            
+            GlobalSettings.db.reload();
+            
+            res.json({ success: true, message: 'Cache geleert' });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+    
+    // Commands synchronisieren
+    app.post('/api/admin/sync-commands', async (req, res) => {
+        try {
+            console.log('🔄 Syncing commands...');
+            
+            if (!client || !client.application) {
+                return res.status(503).json({ error: 'Bot nicht bereit' });
+            }
+            
+            const commands = [];
+            const fs = require('fs');
+            const path = require('path');
+            const commandsPath = path.join(__dirname, 'commands');
+            
+            // Lade alle Commands
+            const loadCommands = (dir) => {
+                const files = fs.readdirSync(dir);
+                for (const file of files) {
+                    const fullPath = path.join(dir, file);
+                    if (fs.statSync(fullPath).isDirectory()) {
+                        loadCommands(fullPath);
+                    } else if (file.endsWith('.js')) {
+                        try {
+                            delete require.cache[require.resolve(fullPath)];
+                            const command = require(fullPath);
+                            if (command.data) {
+                                commands.push(command.data.toJSON());
+                            }
+                        } catch (error) {
+                            console.error(`Fehler beim Laden von ${file}:`, error);
+                        }
+                    }
+                }
+            };
+            
+            loadCommands(commandsPath);
+            
+            await client.application.commands.set(commands);
+            console.log(`✅ ${commands.length} Commands synchronisiert`);
+            
+            res.json({ success: true, message: `${commands.length} Commands synchronisiert` });
+        } catch (error) {
+            console.error('Error syncing commands:', error);
+            res.status(500).json({ error: error.message });
+        }
+    });
+    
+    // Bot Logs
+    app.get('/api/admin/logs', async (req, res) => {
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const logsPath = path.join(__dirname, '../logs/bot.log');
+            
+            if (fs.existsSync(logsPath)) {
+                const logs = fs.readFileSync(logsPath, 'utf8');
+                const lines = logs.split('\n').slice(-100); // Letzte 100 Zeilen
+                res.json({ success: true, logs: lines.join('\n') });
+            } else {
+                res.json({ success: true, logs: 'Keine Logs vorhanden' });
+            }
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+    
+    // User suchen
+    app.get('/api/admin/users/search', async (req, res) => {
+        try {
+            const query = req.query.q;
+            
+            if (!client || !client.isReady()) {
+                return res.status(503).json({ error: 'Bot nicht bereit' });
+            }
+            
+            let user = null;
+            
+            // Versuche als User-ID
+            if (/^\d+$/.test(query)) {
+                try {
+                    user = await client.users.fetch(query);
+                } catch (error) {
+                    console.log('User nicht gefunden mit ID:', query);
+                }
+            }
+            
+            if (user) {
+                res.json({
+                    success: true,
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        discriminator: user.discriminator,
+                        bot: user.bot,
+                        avatar: user.displayAvatarURL(),
+                        createdTimestamp: user.createdTimestamp
+                    }
+                });
+            } else {
+                res.json({ success: false, message: 'User nicht gefunden' });
+            }
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+    
+    // Datenbank bereinigen
+    app.post('/api/admin/cleanup', async (req, res) => {
+        try {
+            console.log('🧹 Cleaning up old data...');
+            
+            const Ticket = require('./models/Ticket');
+            const Application = require('./models/Application');
+            
+            let removed = 0;
+            
+            // Lösche geschlossene Tickets älter als 30 Tage
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            const tickets = Ticket.find({ status: 'closed' });
+            for (const ticket of tickets) {
+                if (new Date(ticket.closedAt) < thirtyDaysAgo) {
+                    Ticket.deleteOne({ _id: ticket._id });
+                    removed++;
+                }
+            }
+            
+            // Lösche abgelehnte Applications älter als 7 Tage
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            
+            const applications = Application.find({ status: 'rejected' });
+            for (const app of applications) {
+                if (new Date(app.createdAt) < sevenDaysAgo) {
+                    Application.deleteOne({ _id: app._id });
+                    removed++;
+                }
+            }
+            
+            res.json({ success: true, removed });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+    
+    // Globale Statistiken
+    app.get('/api/admin/stats/global', async (req, res) => {
+        try {
+            if (!client || !client.isReady()) {
+                return res.status(503).json({ error: 'Bot nicht bereit' });
+            }
+            
+            const Ticket = require('./models/Ticket');
+            const User = require('./models/User');
+            
+            const stats = {
+                servers: client.guilds.cache.size,
+                users: client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0),
+                tickets: Ticket.count({}),
+                commands: 0 // TODO: Command counter implementieren
+            };
+            
+            res.json({ success: true, stats });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
