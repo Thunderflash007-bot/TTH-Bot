@@ -1102,6 +1102,101 @@ function startBotAPI(client) {
         }
     });
     
+    // User-Statistiken abrufen
+    app.get('/api/admin/users/:userId/stats', async (req, res) => {
+        try {
+            const { userId } = req.params;
+            
+            if (!client || !client.isReady()) {
+                return res.status(503).json({ error: 'Bot nicht bereit' });
+            }
+            
+            // Hole User-Daten
+            const user = await client.users.fetch(userId).catch(() => null);
+            if (!user) {
+                return res.status(404).json({ error: 'User nicht gefunden' });
+            }
+            
+            const Ticket = require('./models/Ticket');
+            const Warning = require('./models/Warning');
+            const ModerationLog = require('./models/ModerationLog');
+            
+            // Zähle Tickets von diesem User
+            const tickets = Ticket.find({ userId });
+            const ticketCount = tickets.length;
+            const openTickets = tickets.filter(t => t.status === 'open').length;
+            const closedTickets = tickets.filter(t => t.status === 'closed').length;
+            
+            // Zähle Warnungen
+            const warnings = Warning.find({ userId });
+            const warningCount = warnings.length;
+            const activeWarnings = warnings.filter(w => !w.removed).length;
+            
+            // Zähle Moderation Logs
+            const moderationLogs = ModerationLog.find({ userId });
+            const modActions = {
+                warns: moderationLogs.filter(l => l.action === 'warn').length,
+                kicks: moderationLogs.filter(l => l.action === 'kick').length,
+                bans: moderationLogs.filter(l => l.action === 'ban').length,
+                reports: moderationLogs.filter(l => l.action === 'report').length
+            };
+            
+            // Hole Server-Liste wo User Mitglied ist
+            const guilds = [];
+            for (const [guildId, guild] of client.guilds.cache) {
+                try {
+                    const member = await guild.members.fetch(userId).catch(() => null);
+                    if (member) {
+                        guilds.push({
+                            id: guild.id,
+                            name: guild.name,
+                            icon: guild.iconURL(),
+                            joinedAt: member.joinedAt,
+                            roles: member.roles.cache
+                                .filter(r => r.id !== guild.id)
+                                .map(r => ({ id: r.id, name: r.name, color: r.hexColor }))
+                        });
+                    }
+                } catch (error) {
+                    // Skip if can't fetch member
+                }
+            }
+            
+            const stats = {
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    discriminator: user.discriminator,
+                    tag: user.tag,
+                    avatar: user.displayAvatarURL({ size: 256 }),
+                    bot: user.bot,
+                    createdAt: user.createdAt,
+                    accountAge: Math.floor((Date.now() - user.createdTimestamp) / (1000 * 60 * 60 * 24)) + ' Tage'
+                },
+                tickets: {
+                    total: ticketCount,
+                    open: openTickets,
+                    closed: closedTickets
+                },
+                warnings: {
+                    total: warningCount,
+                    active: activeWarnings,
+                    removed: warningCount - activeWarnings
+                },
+                moderation: modActions,
+                guilds: {
+                    count: guilds.length,
+                    list: guilds
+                }
+            };
+            
+            res.json({ success: true, stats });
+        } catch (error) {
+            console.error('Error fetching user stats:', error);
+            res.status(500).json({ error: error.message });
+        }
+    });
+    
     const PORT = process.env.BOT_API_PORT || 3001;
     app.listen(PORT, () => {
         console.log(`✅ Bot API läuft auf Port ${PORT}`);

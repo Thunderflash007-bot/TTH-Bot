@@ -759,4 +759,21 @@ router.get('/stats/global', isAdmin, requirePermission('viewGlobalStats'), async
     }
 });
 
+// User-Statistiken abrufen
+router.get('/users/:userId/stats', isAdmin, requirePermission('viewUserStats'), async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const botApi = axios.create({
+            baseURL: process.env.BOT_API_URL || 'http://localhost:4301',
+            timeout: 10000
+        });
+        
+        const response = await botApi.get(`/api/admin/users/${userId}/stats`);
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error fetching user stats:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;

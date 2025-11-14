@@ -9,20 +9,76 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/socket.io/socket.io.js"></script>
     <style>
+        /* Animated Background */
+        body {
+            background: #0a0e27 !important;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2a1f3a 100%);
+        }
+
+        .animated-bg canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Admin Container */
+        .admin-container {
+            animation: fadeIn 0.6s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
         .admin-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px;
             border-radius: 10px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            animation: slideDown 0.5s ease-out;
+            backdrop-filter: blur(10px);
         }
+        
         .admin-card {
-            background: white;
+            background: rgba(20, 25, 45, 0.9) !important;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            color: white;
             padding: 25px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            transition: all 0.3s;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .admin-card h2,
+        .admin-card h3,
+        .admin-card h4,
+        .admin-card p,
+        .admin-card label,
+        .admin-card span {
+            color: white !important;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+            background: rgba(25, 30, 50, 0.95) !important;
         }
         .status-badge {
             display: inline-block;
@@ -41,20 +97,24 @@
         }
         .severity-option {
             padding: 15px;
-            border: 2px solid #ddd;
+            border: 2px solid rgba(102, 126, 234, 0.3);
             border-radius: 8px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
+            background: rgba(20, 25, 45, 0.6);
+            color: white;
         }
         .severity-option:hover {
-            border-color: #5865F2;
-            background: #f8f9ff;
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.3);
+            transform: scale(1.05);
         }
         .severity-option.active {
-            border-color: #5865F2;
-            background: #5865F2;
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
         }
         .severity-info { border-color: #5865F2; }
         .severity-warning { border-color: #FEE75C; }
@@ -71,6 +131,12 @@
             padding: 20px;
             border-radius: 10px;
             text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        .guild-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
         }
         .stat-box {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
@@ -78,10 +144,85 @@
             border-radius: 10px;
             color: white;
             text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        .stat-box:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.4);
         }
         .stat-box h3 {
             font-size: 2.5em;
             margin: 10px 0;
+            animation: countUp 0.5s ease-out;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Button Improvements */
+        button, .btn {
+            transition: all 0.3s;
+        }
+
+        button:hover, .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Input Improvements */
+        input, select, textarea {
+            background: rgba(26, 31, 58, 0.6) !important;
+            border: 2px solid rgba(102, 126, 234, 0.3) !important;
+            color: white !important;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+            outline: none;
+        }
+
+        /* Label Colors */
+        label, h2, h3, h4, strong {
+            color: white !important;
         }
         
         /* Toggle Switch */
@@ -135,10 +276,17 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            background: white;
+            background: rgba(20, 25, 45, 0.8);
             border-radius: 8px;
             margin-bottom: 10px;
-            border-left: 4px solid #5865F2;
+            border-left: 4px solid #667eea;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-left-width: 4px;
+            backdrop-filter: blur(10px);
+        }
+        .feature-item:hover {
+            background: rgba(25, 30, 50, 0.9);
+            border-color: #667eea;
         }
         .feature-item.disabled {
             border-left-color: #ED4245;
@@ -146,11 +294,11 @@
         }
         .feature-info h4 {
             margin: 0 0 5px 0;
-            color: #2C2F33;
+            color: white;
         }
         .feature-info p {
             margin: 0;
-            color: #6c757d;
+            color: rgba(255, 255, 255, 0.7);
             font-size: 13px;
         }
         .feature-toggle-switch .switch {
@@ -171,14 +319,21 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 15px;
-            background: #f8f9fa;
+            background: rgba(20, 25, 45, 0.7);
             border-radius: 8px;
             margin-bottom: 8px;
-            border-left: 4px solid #5865F2;
+            border-left: 4px solid #667eea;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-left-width: 4px;
+            backdrop-filter: blur(10px);
+        }
+        .bypass-user-item:hover {
+            background: rgba(25, 30, 50, 0.85);
+            border-color: #667eea;
         }
         .bypass-user-item.current-user {
             border-left-color: #57F287;
-            background: #e8f5e9;
+            background: rgba(87, 242, 135, 0.15);
         }
         .bypass-user-info {
             display: flex;
@@ -189,14 +344,14 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            border: 2px solid #5865F2;
+            border: 2px solid #667eea;
         }
         .bypass-user-name {
             font-weight: 500;
-            color: #2C2F33;
+            color: white;
         }
         .bypass-user-id {
-            color: #6c757d;
+            color: rgba(255, 255, 255, 0.6);
             font-size: 12px;
             font-family: monospace;
         }
@@ -220,6 +375,11 @@
     </style>
 </head>
 <body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <canvas id="particles"></canvas>
+    </div>
+    
     <nav class="navbar">
         <div class="container">
             <div class="nav-brand">
@@ -281,8 +441,8 @@
             </p>
 
             <!-- Admin hinzufügen -->
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 15px 0; color: #2C2F33;">
+            <div style="background: rgba(26, 31, 58, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 15px 0; color: white;">
                     <i class="fas fa-user-plus"></i> Neuen Admin hinzufügen
                 </h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 15px;">
@@ -302,21 +462,21 @@
                 <% if (adminUsers && adminUsers.length > 0) { %>
                     <div style="display: grid; gap: 15px;">
                         <% adminUsers.forEach(admin => { %>
-                            <div style="background: <%= admin.isMainAdmin ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white' %>; border-radius: 10px; padding: 20px; border-left: 4px solid <%= admin.isMainAdmin ? '#FFD700' : '#5865F2' %>; <%= admin.isMainAdmin ? 'color: white;' : '' %>">
+                            <div style="background: <%= admin.isMainAdmin ? 'linear-gradient(135deg, rgb(102, 126, 234) 0%, rgb(118, 75, 162) 100%)' : 'rgba(26, 31, 58, 0.8)' %>; backdrop-filter: blur(10px); border: 2px solid <%= admin.isMainAdmin ? 'rgb(255, 215, 0)' : 'rgba(102, 126, 234, 0.3)' %>; border-radius: 10px; padding: 20px; color: white;">
                                 <div style="display: flex; justify-content: space-between; align-items: start;">
                                     <div style="flex: 1;">
-                                        <h3 style="margin: 0 0 5px 0; <%= admin.isMainAdmin ? 'color: white;' : 'color: #2C2F33;' %>">
+                                        <h3 style="margin: 0 0 5px 0; <%= admin.isMainAdmin ? 'color: white;' : 'color: rgb(44, 47, 51);' %>">
                                             <% if (admin.isMainAdmin) { %>
-                                                <i class="fas fa-crown" style="color: #FFD700;"></i> <%= admin.username || 'Haupt-Admin' %>
-                                                <span style="background: rgba(255, 215, 0, 0.2); color: #FFD700; padding: 3px 10px; border-radius: 5px; font-size: 12px; margin-left: 10px; font-weight: 600;">
+                                                <i class="fas fa-crown" style="color: rgb(255, 215, 0);"></i> <%= admin.username || 'Haupt-Admin' %>
+                                                <span style="background: rgba(255, 215, 0, 0.2); color: rgb(255, 215, 0); padding: 3px 10px; border-radius: 5px; font-size: 12px; margin-left: 10px; font-weight: 600;">
                                                     HAUPT-ADMIN
                                                 </span>
                                             <% } else { %>
                                                 <i class="fas fa-user"></i> <%= admin.username || 'Admin User' %>
                                             <% } %>
                                         </h3>
-                                        <p style="font-family: monospace; <%= admin.isMainAdmin ? 'color: rgba(255, 255, 255, 0.8);' : 'color: #6c757d;' %> margin: 0 0 10px 0;"><%= admin.userId %></p>
-                                        <small style="<%= admin.isMainAdmin ? 'color: rgba(255, 255, 255, 0.7);' : 'color: #6c757d;' %>">
+                                        <p style="font-family: monospace; <%= admin.isMainAdmin ? 'color: rgba(255, 255, 255, 0.8);' : 'color: rgb(108, 117, 125);' %> margin: 0 0 10px 0;"><%= admin.userId %></p>
+                                        <small style="<%= admin.isMainAdmin ? 'color: rgba(255, 255, 255, 0.7);' : 'color: rgb(108, 117, 125);' %>">
                                             <% if (admin.isMainAdmin) { %>
                                                 <i class="fas fa-shield-alt"></i> System-Administrator (Vollzugriff)
                                             <% } else { %>
@@ -341,8 +501,8 @@
                                 </div>
 
                                 <!-- Berechtigungen Übersicht -->
-                                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid <%= admin.isMainAdmin ? 'rgba(255, 255, 255, 0.2)' : '#f0f0f0' %>;">
-                                    <strong style="<%= admin.isMainAdmin ? 'color: white;' : 'color: #5865F2;' %> display: block; margin-bottom: 10px;">
+                                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid <%= admin.isMainAdmin ? 'rgba(255, 255, 255, 0.2)' : 'rgb(240, 240, 240)' %>;">
+                                    <strong style="<%= admin.isMainAdmin ? 'color: white;' : 'color: rgb(88, 101, 242);' %> display: block; margin-bottom: 10px;">
                                         <i class="fas fa-shield-alt"></i> <%= admin.isMainAdmin ? 'Alle Berechtigungen' : 'Aktive Berechtigungen' %>:
                                     </strong>
                                     <% if (admin.isMainAdmin) { %>
@@ -390,7 +550,7 @@
                         <% }); %>
                     </div>
                 <% } else { %>
-                    <div style="text-align: center; padding: 40px; color: #6c757d; background: #f8f9fa; border-radius: 10px;">
+                    <div style="text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.6); background: rgba(26, 31, 58, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 10px;">
                         <i class="fas fa-users-slash" style="font-size: 48px; opacity: 0.3;"></i>
                         <p style="margin-top: 15px;">Noch keine Admin-User hinzugefügt</p>
                     </div>
@@ -416,7 +576,7 @@
             </p>
 
             <!-- Wartungsmodus Toggle -->
-            <div style="background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid #ED4245;">
+            <div style="background: rgba(26, 31, 58, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(237, 66, 69, 0.3); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <div>
                         <h3 style="margin: 0; color: #2C2F33;">
@@ -442,7 +602,7 @@
                     </button>
                 </div>
                 
-                <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                <div style="background: rgba(26, 31, 58, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(88, 101, 242, 0.3); color: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
                     <strong style="color: #5865F2;">
                         <i class="fas fa-user-shield"></i> Admin-Bypass Verwaltung:
                     </strong>
@@ -451,7 +611,7 @@
                     </p>
                     
                     <!-- Self Bypass Toggle -->
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #5865F2;">
+                    <div style="background: rgba(26, 31, 58, 0.4); backdrop-filter: blur(10px); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #5865F2;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <strong style="color: #5865F2;">
@@ -489,8 +649,8 @@
             </div>
 
             <!-- Feature Toggles -->
-            <div style="background: #f8f9fa; padding: 25px; border-radius: 10px;">
-                <h3 style="margin: 0 0 15px 0; color: #2C2F33;">
+            <div style="background: rgba(26, 31, 58, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); color: white; padding: 25px; border-radius: 10px;">
+                <h3 style="margin: 0 0 15px 0; color: white;">
                     <i class="fas fa-toggle-on"></i> Feature-Kontrolle
                 </h3>
                 <p style="color: #6c757d; margin-bottom: 20px; font-size: 14px;">
@@ -1052,7 +1212,7 @@
                 
                 for (const [category, features] of Object.entries(categories)) {
                     html += `
-                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <div style="background: rgba(26, 31, 58, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); color: white; padding: 20px; border-radius: 10px;">
                             <h3 style="margin: 0 0 15px 0; color: #5865F2;">
                                 <i class="fas fa-layer-group"></i> ${category}
                             </h3>
@@ -1065,10 +1225,10 @@
                         const reason = featureData?.reason || '';
                         
                         html += `
-                            <div style="background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${enabled ? '#57F287' : '#ED4245'};">
+                            <div style="background: rgba(26, 31, 58, 0.8); backdrop-filter: blur(10px); border: 2px solid ${enabled ? 'rgba(87, 242, 135, 0.3)' : 'rgba(237, 66, 69, 0.3)'}; color: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
                                 <div style="flex: 1;">
-                                    <strong>${featureNames[feature] || feature}</strong>
-                                    ${!enabled && reason ? `<br><small style="color: #6c757d;">Grund: ${reason}</small>` : ''}
+                                    <strong style="color: white;">${featureNames[feature] || feature}</strong>
+                                    ${!enabled && reason ? `<br><small style="color: rgba(255, 255, 255, 0.6);">Grund: ${reason}</small>` : ''}
                                 </div>
                                 <div style="display: flex; gap: 10px; align-items: center;">
                                     <span style="font-size: 12px; color: ${enabled ? '#57F287' : '#ED4245'}; font-weight: 600;">
@@ -1142,7 +1302,25 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadGlobalSettings();
             loadBugReports();
+            loadGlobalStats();
         });
+        
+        // Globale Statistiken laden
+        async function loadGlobalStats() {
+            try {
+                const response = await fetch('/admin/stats/global');
+                const data = await response.json();
+                
+                if (data.success && data.stats) {
+                    document.getElementById('totalServers').textContent = data.stats.servers || 0;
+                    document.getElementById('totalUsers').textContent = data.stats.users || 0;
+                    document.getElementById('totalTickets').textContent = data.stats.tickets || 0;
+                    document.getElementById('totalCommands').textContent = data.stats.commands || 0;
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden der Statistiken:', error);
+            }
+        }
 
         // Load Global Settings (Wartungsmodus + Features)
         async function loadGlobalSettings() {
@@ -1187,7 +1365,7 @@
             
             if (bypassIds.length === 0) {
                 container.innerHTML = `
-                    <div style="text-align: center; padding: 15px; color: #6c757d; background: #f8f9fa; border-radius: 8px;">
+                    <div style="text-align: center; padding: 15px; color: rgba(255, 255, 255, 0.6); background: rgba(26, 31, 58, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 8px;">
                         <i class="fas fa-user-slash"></i>
                         <p style="margin: 5px 0 0 0;">Keine Bypass-User konfiguriert</p>
                     </div>
@@ -1546,17 +1724,17 @@
                     };
                     
                     html += `
-                        <div style="background: white; border-radius: 10px; padding: 20px; border-left: 4px solid ${priorityColors[report.priority]};">
+                        <div style="background: rgba(26, 31, 58, 0.8); backdrop-filter: blur(10px); border: 2px solid ${priorityColors[report.priority]}; color: white; border-radius: 10px; padding: 20px;">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
                                 <div style="flex: 1;">
                                     <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                                        <span style="background: #f8f9fa; padding: 4px 12px; border-radius: 6px; font-family: monospace; font-size: 13px; font-weight: bold;">${report.id}</span>
+                                        <span style="background: rgba(26, 31, 58, 0.8); padding: 4px 12px; border-radius: 6px; font-family: monospace; font-size: 13px; font-weight: bold; color: white;">${report.id}</span>
                                         <span style="background: ${priorityColors[report.priority]}; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">${priorityLabels[report.priority]}</span>
-                                        <span style="background: ${statusColors[report.status]}; color: ${report.status === 'open' || report.status === 'fixed' ? 'white' : '#2C2F33'}; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">${statusLabels[report.status]}</span>
+                                        <span style="background: ${statusColors[report.status]}; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">${statusLabels[report.status]}</span>
                                     </div>
-                                    <h3 style="margin: 0 0 10px 0; color: #2C2F33;">${report.title}</h3>
-                                    <p style="margin: 0 0 10px 0; color: #6c757d; font-size: 14px;">${report.description}</p>
-                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 13px; color: #6c757d;">
+                                    <h3 style="margin: 0 0 10px 0; color: white;">${report.title}</h3>
+                                    <p style="margin: 0 0 10px 0; color: rgba(255, 255, 255, 0.7); font-size: 14px;">${report.description}</p>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 13px; color: rgba(255, 255, 255, 0.6);">
                                         <div><i class="fas fa-user"></i> ${report.username}</div>
                                         <div><i class="fas fa-server"></i> ${report.guildName}</div>
                                         <div><i class="fas fa-clock"></i> ${new Date(report.createdAt).toLocaleString('de-DE')}</div>
@@ -1669,10 +1847,10 @@
                     if (!report) return;
                     
                     let detailsHTML = `
-                        <div style="max-width: 600px;">
-                            <h2 style="margin-bottom: 20px;">${report.title}</h2>
+                        <div style="max-width: 600px; color: white;">
+                            <h2 style="margin-bottom: 20px; color: white;">${report.title}</h2>
                             
-                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div style="background: rgba(26, 31, 58, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                                 <strong>Bug-ID:</strong> ${report.id}<br>
                                 <strong>Gemeldet von:</strong> ${report.username} (${report.userId})<br>
                                 <strong>Server:</strong> ${report.guildName}<br>
@@ -1721,9 +1899,9 @@
                         `;
                         report.notes.forEach(note => {
                             detailsHTML += `
-                                <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 8px;">
-                                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">${new Date(note.timestamp).toLocaleString('de-DE')}</div>
-                                    <div>${note.text}</div>
+                                <div style="background: rgba(26, 31, 58, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); color: white; padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+                                    <div style="font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-bottom: 5px;">${new Date(note.timestamp).toLocaleString('de-DE')}</div>
+                                    <div style="color: white;">${note.text}</div>
                                 </div>
                             `;
                         });
@@ -1862,8 +2040,8 @@
                 if (data.success && data.user) {
                     const user = data.user;
                     results.innerHTML = `
-                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px;">
-                            <h3><i class="fas fa-user"></i> ${user.username}</h3>
+                        <div style="background: rgba(26, 31, 58, 0.8); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); color: white; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                            <h3 style="color: white;"><i class="fas fa-user"></i> ${user.username}</h3>
                             <p><strong>ID:</strong> ${user.id}</p>
                             <p><strong>Bot:</strong> ${user.bot ? 'Ja' : 'Nein'}</p>
                             <p><strong>Erstellt:</strong> ${new Date(user.createdTimestamp).toLocaleString('de-DE')}</p>
@@ -1903,6 +2081,89 @@
             }
         }
 
+        // User-Statistiken abrufen
+        async function getUserStats(userId) {
+            const results = document.getElementById('userSearchResults');
+            results.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Lade Statistiken...</p>';
+            
+            try {
+                const response = await fetch(`/admin/users/${userId}/stats`);
+                const data = await response.json();
+                
+                if (data.success && data.stats) {
+                    const stats = data.stats;
+                    let html = `
+                        <div style="background: rgba(26, 31, 58, 0.8); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); color: white; padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                                <img src="${stats.user.avatar}" style="width: 64px; height: 64px; border-radius: 50%;" />
+                                <div>
+                                    <h2 style="margin: 0; color: white;">${stats.user.username}</h2>
+                                    <p style="margin: 5px 0; color: rgba(255, 255, 255, 0.7);">ID: ${stats.user.id}</p>
+                                    <p style="margin: 5px 0; color: rgba(255, 255, 255, 0.7);">Account-Alter: ${stats.user.accountAge}</p>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 8px;">
+                                    <h4 style="margin: 0 0 10px 0;">🎫 Tickets</h4>
+                                    <p style="font-size: 24px; font-weight: bold; margin: 0;">${stats.tickets.total}</p>
+                                    <small>Offen: ${stats.tickets.open} | Geschlossen: ${stats.tickets.closed}</small>
+                                </div>
+                                
+                                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 15px; border-radius: 8px;">
+                                    <h4 style="margin: 0 0 10px 0;">⚠️ Warnungen</h4>
+                                    <p style="font-size: 24px; font-weight: bold; margin: 0;">${stats.warnings.total}</p>
+                                    <small>Aktiv: ${stats.warnings.active} | Entfernt: ${stats.warnings.removed}</small>
+                                </div>
+                                
+                                <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 15px; border-radius: 8px;">
+                                    <h4 style="margin: 0 0 10px 0;">🛡️ Moderation</h4>
+                                    <p style="margin: 5px 0; font-size: 14px;">Warns: ${stats.moderation.warns}</p>
+                                    <p style="margin: 5px 0; font-size: 14px;">Kicks: ${stats.moderation.kicks}</p>
+                                    <p style="margin: 5px 0; font-size: 14px;">Bans: ${stats.moderation.bans}</p>
+                                </div>
+                            </div>
+                            
+                            <h3 style="margin: 20px 0 10px 0; color: white;"><i class="fas fa-server"></i> Server (${stats.guilds.count})</h3>
+                            <div style="display: grid; gap: 10px; max-height: 300px; overflow-y: auto;">
+                    `;
+                    
+                    stats.guilds.list.forEach(guild => {
+                        html += `
+                            <div style="background: rgba(26, 31, 58, 0.6); padding: 15px; border-radius: 8px; border-left: 4px solid #5865F2;">
+                                <strong style="color: white;">${guild.name}</strong>
+                                <p style="margin: 5px 0; color: rgba(255, 255, 255, 0.7); font-size: 13px;">
+                                    Beigetreten: ${new Date(guild.joinedAt).toLocaleDateString('de-DE')}
+                                </p>
+                                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;">
+                                    ${guild.roles.slice(0, 5).map(role => `
+                                        <span style="background: ${role.color}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">
+                                            ${role.name}
+                                        </span>
+                                    `).join('')}
+                                    ${guild.roles.length > 5 ? `<span style="color: rgba(255, 255, 255, 0.6); font-size: 11px;">+${guild.roles.length - 5} weitere</span>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                            <button onclick="searchUser()" class="btn" style="background: #5865F2; color: white; margin-top: 20px; width: 100%;">
+                                <i class="fas fa-arrow-left"></i> Zurück zur Suche
+                            </button>
+                        </div>
+                    `;
+                    
+                    results.innerHTML = html;
+                } else {
+                    results.innerHTML = '<p style="color: #ED4245;">❌ Statistiken konnten nicht geladen werden</p>';
+                }
+            } catch (error) {
+                results.innerHTML = '<p style="color: #ED4245;">❌ Fehler: ' + error.message + '</p>';
+            }
+        }
+
         // Backups anzeigen
         async function showBackups() {
             const container = document.getElementById('backupsList');
@@ -1922,10 +2183,10 @@
                 
                 if (data.success && data.backups.length > 0) {
                     content.innerHTML = data.backups.map(backup => `
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="background: rgba(26, 31, 58, 0.8); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); color: white; padding: 15px; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong>${backup.filename}</strong><br>
-                                <small>${backup.size} - ${backup.date}</small>
+                                <strong style="color: white;">${backup.filename}</strong><br>
+                                <small style="color: rgba(255, 255, 255, 0.7);">${backup.size} - ${backup.date}</small>
                             </div>
                             <button onclick="restoreBackup('${backup.filename}')" class="btn" style="background: #5865F2; color: white;">
                                 <i class="fas fa-undo"></i> Wiederherstellen
@@ -2112,7 +2373,7 @@
 
                     for (const [groupName, perms] of Object.entries(permissionGroups)) {
                         html += `
-                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div style="background: rgba(26, 31, 58, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                                 <h3 style="margin: 0 0 15px 0; color: #5865F2; font-size: 16px;">
                                     ${groupName}
                                 </h3>
@@ -2122,7 +2383,7 @@
                         for (const [key, label] of Object.entries(perms)) {
                             const checked = admin.permissions[key] ? 'checked' : '';
                             html += `
-                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: white; border-radius: 6px;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: rgba(26, 31, 58, 0.8); backdrop-filter: blur(10px); border: 2px solid rgba(102, 126, 234, 0.2); color: white; border-radius: 6px;">
                                     <input type="checkbox" id="perm_${key}" ${checked} style="cursor: pointer; width: 18px; height: 18px;">
                                     <span style="flex: 1;">${label}</span>
                                 </label>
@@ -2213,6 +2474,83 @@
                     };
                 });
         }
+
+        // Partikel Animation
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const particles = [];
+        const particleCount = 100;
+        const maxDistance = 150;
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2 + 1;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(102, 126, 234, 0.8)';
+                ctx.fill();
+            }
+        }
+        
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            
+            // Verbindungslinien
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < maxDistance) {
+                        const opacity = (1 - distance / maxDistance) * 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(102, 126, 234, ${opacity})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
     </script>
 
     <footer style="margin-top: 50px; padding: 30px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-align: center;">
