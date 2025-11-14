@@ -59,7 +59,6 @@ module.exports = {
                 name: `${target.username}'s Level & XP`,
                 iconURL: target.displayAvatarURL()
             })
-            .setThumbnail(target.displayAvatarURL({ size: 256 }))
             .setDescription(`**${getLevelTitle(userData.level)}**`)
             .addFields(
                 { name: '📊 Level', value: `\`${userData.level}\``, inline: true },

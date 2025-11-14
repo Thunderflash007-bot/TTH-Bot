@@ -50,7 +50,6 @@ module.exports = {
                 name: `Userinfo für ${target.tag}`,
                 iconURL: target.displayAvatarURL()
             })
-            .setThumbnail(target.displayAvatarURL({ size: 512 }))
             .setDescription(badges.length > 0 ? badges.join(' ') : null)
             .addFields(
                 { name: '👤 Erwähnung', value: `${target}`, inline: true },
@@ -66,10 +65,6 @@ module.exports = {
             )
             .setFooter({ text: `Abgefragt von ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
             .setTimestamp();
-
-        if (target.bannerURL()) {
-            embed.setImage(target.bannerURL({ size: 1024 }));
-        }
 
         await interaction.reply({ embeds: [embed] });
     }

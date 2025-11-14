@@ -986,6 +986,29 @@
             console.log('📡 WebSocket getrennt');
         });
         
+        // Bot-Status Live-Update
+        socket.on('bot-status-update', (data) => {
+            console.log('🔔 Bot-Status Update:', data);
+            
+            // Update Bot Status Boxes
+            if (document.querySelector('.admin-card h2').textContent.includes('Bot Status')) {
+                const statBoxes = document.querySelectorAll('.admin-card .stat-box h3');
+                if (statBoxes.length >= 3) {
+                    statBoxes[0].textContent = data.online ? 'Online' : 'Offline';
+                    statBoxes[1].textContent = data.guilds || 0;
+                    statBoxes[2].textContent = data.uptime || '0h';
+                }
+            }
+            
+            // Update Global Stats
+            if (data.stats) {
+                const totalServersEl = document.getElementById('totalServers');
+                const totalUsersEl = document.getElementById('totalUsers');
+                if (totalServersEl) totalServersEl.textContent = data.stats.servers || 0;
+                if (totalUsersEl) totalUsersEl.textContent = data.stats.users || 0;
+            }
+        });
+        
         // Wartungsmodus Live-Update
         socket.on('maintenance-mode-changed', (data) => {
             console.log('🔔 Wartungsmodus geändert:', data.enabled);
@@ -2239,9 +2262,33 @@
         // Stats beim Laden aktualisieren
         document.addEventListener('DOMContentLoaded', () => {
             loadGlobalStats();
-            // Alle 30 Sekunden aktualisieren
-            setInterval(loadGlobalStats, 30000);
+            loadBotStatus();
+            // Alle 10 Sekunden aktualisieren
+            setInterval(() => {
+                loadGlobalStats();
+                loadBotStatus();
+            }, 10000);
         });
+        
+        // Bot Status laden
+        async function loadBotStatus() {
+            try {
+                const response = await fetch('/admin/bot-status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update Bot Status Boxes
+                    const statBoxes = document.querySelectorAll('.admin-card .stat-box h3');
+                    if (statBoxes.length >= 3) {
+                        statBoxes[0].textContent = data.botStatus.online ? 'Online' : 'Offline';
+                        statBoxes[1].textContent = (data.botStatus.guilds && data.botStatus.guilds.length) || 0;
+                        statBoxes[2].textContent = data.botStatus.uptime || '0h';
+                    }
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden des Bot-Status:', error);
+            }
+        }
 
         // === ADMIN USER MANAGEMENT ===
 

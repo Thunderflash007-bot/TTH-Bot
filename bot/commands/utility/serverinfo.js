@@ -41,7 +41,6 @@ module.exports = {
                 name: guild.name,
                 iconURL: guild.iconURL({ size: 512 })
             })
-            .setThumbnail(guild.iconURL({ size: 512 }))
             .setDescription(guild.description || '*Keine Beschreibung*')
             .addFields(
                 { name: '👑 Server-Besitzer', value: `<@${guild.ownerId}>`, inline: true },
@@ -56,10 +55,6 @@ module.exports = {
             )
             .setFooter({ text: `Abgefragt von ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
             .setTimestamp();
-
-        if (guild.bannerURL()) {
-            embed.setImage(guild.bannerURL({ size: 1024 }));
-        }
 
         await interaction.reply({ embeds: [embed] });
     }

@@ -62,7 +62,6 @@ module.exports = {
                 iconURL: member.user.displayAvatarURL()
             })
             .setDescription(config?.leaveMessage || randomDesc)
-            .setThumbnail(member.user.displayAvatarURL({ size: 256 }))
             .addFields(
                 { name: '👤 Username', value: member.user.tag, inline: true },
                 { name: '📅 Beigetreten', value: timeOnServer, inline: true },

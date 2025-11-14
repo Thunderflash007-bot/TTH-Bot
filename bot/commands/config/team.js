@@ -242,8 +242,7 @@ module.exports = {
                 .setAuthor({ 
                     name: `Team von ${interaction.guild.name}`,
                     iconURL: interaction.guild.iconURL()
-                })
-                .setThumbnail(interaction.guild.iconURL({ size: 256 }));
+                });
 
             let totalMembers = 0;
             for (const team of teamMembers) {

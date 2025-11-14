@@ -58,6 +58,33 @@ function requirePermission(permission) {
     };
 }
 
+// Bot-Status API Endpoint
+router.get('/bot-status', isAdmin, async (req, res) => {
+    try {
+        const botApi = axios.create({
+            baseURL: process.env.BOT_API_URL || 'http://localhost:4301',
+            timeout: 5000
+        });
+
+        let botStatus = { online: false, guilds: [] };
+        try {
+            const healthResponse = await botApi.get('/api/health');
+            const guildsResponse = await botApi.get('/api/guilds');
+            botStatus = {
+                online: true,
+                uptime: healthResponse.data.uptime,
+                guilds: guildsResponse.data.guilds
+            };
+        } catch (error) {
+            console.error('Bot API nicht erreichbar:', error.message);
+        }
+        
+        res.json({ success: true, botStatus });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Admin Panel Route (versteckte URL)
 router.get('/secret-control-panel-x7k9m2p', isAdmin, async (req, res) => {
     try {

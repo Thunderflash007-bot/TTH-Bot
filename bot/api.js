@@ -100,7 +100,6 @@ function startBotAPI(client) {
                 .setColor(0x5865F2)
                 .setTitle('🎉 Test-Willkommensnachricht')
                 .setDescription(customMessage || `Willkommen ${member} auf **${guild.name}**!`)
-                .setThumbnail(member.user.displayAvatarURL())
                 .setFooter({ text: 'Dies ist eine Test-Nachricht vom Dashboard' })
                 .setTimestamp();
             
@@ -677,8 +676,6 @@ function startBotAPI(client) {
             
             if (embed.author) discordEmbed.setAuthor({ name: embed.author });
             if (embed.footer) discordEmbed.setFooter({ text: embed.footer });
-            if (embed.thumbnail) discordEmbed.setThumbnail(embed.thumbnail);
-            if (embed.image) discordEmbed.setImage(embed.image);
             if (embed.url) discordEmbed.setURL(embed.url);
             
             if (embed.fields && Array.isArray(embed.fields)) {

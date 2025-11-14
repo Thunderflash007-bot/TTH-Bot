@@ -42,7 +42,6 @@ module.exports = {
                         { name: '📋 Grund', value: reason, inline: false },
                         { name: '👮 Moderator', value: interaction.user.tag, inline: false }
                     )
-                    .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp();
                 
                 await target.send({ embeds: [dmEmbed] });
@@ -71,7 +70,6 @@ module.exports = {
                     name: 'Moderation: User gebannt',
                     iconURL: interaction.guild.iconURL()
                 })
-                .setThumbnail(target.displayAvatarURL({ size: 256 }))
                 .addFields(
                     { name: '👤 Betroffener User', value: `${target} (${target.tag})\n\`${target.id}\``, inline: true },
                     { name: '👮 Moderator', value: `${interaction.user}\n${interaction.user.tag}`, inline: true },

@@ -30,7 +30,6 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#57F287')
                     .setTitle('📋 Neue Bewerbung')
-                    .setThumbnail(interaction.user.displayAvatarURL())
                     .addFields(
                         { name: '👤 Bewerber', value: `${interaction.user.tag} (${interaction.user.id})`, inline: false },
                         { name: '📝 Name', value: name, inline: true },

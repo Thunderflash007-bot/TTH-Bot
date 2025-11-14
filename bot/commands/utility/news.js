@@ -20,10 +20,6 @@ module.exports = {
         .addStringOption(option =>
             option.setName('farbe')
                 .setDescription('Embed-Farbe (z.B. #5865F2)')
-                .setRequired(false))
-        .addStringOption(option =>
-            option.setName('bild')
-                .setDescription('Bild-URL (optional)')
                 .setRequired(false)),
     
     async execute(interaction) {
@@ -31,7 +27,6 @@ module.exports = {
         const content = interaction.options.getString('inhalt');
         const targetChannel = interaction.options.getChannel('channel') || interaction.channel;
         const color = interaction.options.getString('farbe') || '#5865F2';
-        const image = interaction.options.getString('bild');
         
         const embed = new EmbedBuilder()
             .setTitle(`📰 ${title}`)
@@ -39,10 +34,6 @@ module.exports = {
             .setColor(color)
             .setFooter({ text: `News von ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
             .setTimestamp();
-        
-        if (image) {
-            embed.setImage(image);
-        }
         
         await targetChannel.send({ embeds: [embed] });
         

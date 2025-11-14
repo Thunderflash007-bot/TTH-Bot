@@ -111,7 +111,6 @@ function startTwitchChecker(client) {
                             { name: '🎮 Spiel', value: streamData.game_name || 'Kein Spiel', inline: true },
                             { name: '👥 Zuschauer', value: streamData.viewer_count.toString(), inline: true }
                         )
-                        .setImage(streamData.thumbnail_url.replace('{width}', '1280').replace('{height}', '720'))
                         .setTimestamp();
                     
                     // Nachricht mit optionalem Mention

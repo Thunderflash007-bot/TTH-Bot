@@ -62,7 +62,6 @@ module.exports = {
                         inline: true 
                     }
                 )
-                .setThumbnail(interaction.client.user.displayAvatarURL({ size: 256 }))
                 .setFooter({ 
                     text: `Angefordert von ${interaction.user.tag}`, 
                     iconURL: interaction.user.displayAvatarURL() 
@@ -94,8 +93,7 @@ module.exports = {
                         value: '🧹 Löscht 1-100 Nachrichten\n**Berechtigung:** `MANAGE_MESSAGES`', 
                         inline: false 
                     }
-                )
-                .setThumbnail(interaction.guild.iconURL()),
+                ),
 
             tickets: new EmbedBuilder()
                 .setColor('#5865F2')
@@ -125,8 +123,7 @@ module.exports = {
                             '• **Close** - Ticket schließen',
                         inline: false
                     }
-                )
-                .setThumbnail(interaction.guild.iconURL()),
+                ),
 
             config: new EmbedBuilder()
                 .setColor('#FEE75C')
@@ -143,8 +140,7 @@ module.exports = {
                         value: '👋 Richtet das Willkommens-System ein\n**Berechtigung:** `ADMINISTRATOR`', 
                         inline: false 
                     }
-                )
-                .setThumbnail(interaction.guild.iconURL()),
+                ),
 
             team: new EmbedBuilder()
                 .setColor('#57F287')
@@ -174,8 +170,7 @@ module.exports = {
                         value: '👥 Zeigt alle Team-Mitglieder mit Rängen\n**Berechtigung:** Jeder', 
                         inline: false 
                     }
-                )
-                .setThumbnail(interaction.guild.iconURL()),
+                ),
 
             utility: new EmbedBuilder()
                 .setColor('#00D9FF')
@@ -201,8 +196,7 @@ module.exports = {
                         value: '❓ Zeigt diese Hilfe-Seite\n**Berechtigung:** Jeder', 
                         inline: false 
                     }
-                )
-                .setThumbnail(interaction.guild.iconURL()),
+                ),
 
             level: new EmbedBuilder()
                 .setColor('#9B59B6')
@@ -226,7 +220,6 @@ module.exports = {
                         inline: false
                     }
                 )
-                .setThumbnail(interaction.guild.iconURL())
         };
 
         const embed = embeds[category];

@@ -72,7 +72,6 @@ module.exports = {
                     { name: '📅 Erstellt', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
                     { name: '👤 Ersteller', value: `${interaction.user}`, inline: true }
                 )
-                .setThumbnail(interaction.user.displayAvatarURL({ size: 256 }))
                 .setFooter({ text: 'Nutze /close <grund> um das Ticket zu schließen' })
                 .setTimestamp();
 

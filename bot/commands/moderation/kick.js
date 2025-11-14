@@ -37,12 +37,11 @@ module.exports = {
                 const dmEmbed = new EmbedBuilder()
                     .setColor('#FEE75C')
                     .setTitle('👢 Du wurdest gekickt')
-                    .setDescription(`Du wurdest von **${interaction.guild.name}** gekickt.\n\nDu kannst aber mit einem neuen Invite-Link wieder beitreten!`)
+                    .setDescription(`Du wurdest von **${interaction.guild.name}** gekickt.`)
                     .addFields(
                         { name: '📋 Grund', value: reason, inline: false },
                         { name: '👮 Moderator', value: interaction.user.tag, inline: false }
                     )
-                    .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp();
                 
                 await target.send({ embeds: [dmEmbed] });
@@ -71,7 +70,6 @@ module.exports = {
                     name: 'Moderation: User gekickt',
                     iconURL: interaction.guild.iconURL()
                 })
-                .setThumbnail(target.displayAvatarURL({ size: 256 }))
                 .addFields(
                     { name: '👤 Betroffener User', value: `${target} (${target.tag})\n\`${target.id}\``, inline: true },
                     { name: '👮 Moderator', value: `${interaction.user}\n${interaction.user.tag}`, inline: true },

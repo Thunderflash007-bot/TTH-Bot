@@ -58,12 +58,10 @@ module.exports = {
                 iconURL: member.user.displayAvatarURL()
             })
             .setDescription(`${member}\n\n${config?.welcomeMessage || randomDesc}`)
-            .setThumbnail(member.user.displayAvatarURL({ size: 256 }))
             .addFields(
                 { name: '👤 Account erstellt', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true },
                 { name: '📊 Mitglied', value: `#${member.guild.memberCount}`, inline: true }
             )
-            .setImage('https://i.imgur.com/AfFp7pu.png') // Willkommens-Banner (optional)
             .setFooter({ 
                 text: `${member.guild.name} • Viel Spaß!`, 
                 iconURL: member.guild.iconURL() 

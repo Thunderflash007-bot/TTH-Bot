@@ -42,8 +42,6 @@ module.exports = {
                 { name: '📋 Verfügbare Kategorien', value: '• **Support** - Allgemeine Fragen\n• **Bug Report** - Fehler melden\n• **Bewerbung** - Für das Team bewerben\n• **Sonstiges** - Andere Anliegen', inline: false },
                 { name: '⚡ Schnelle Antworten', value: 'Unser Team antwortet in der Regel innerhalb von 24 Stunden.', inline: false }
             )
-            .setThumbnail(interaction.guild.iconURL({ size: 256 }))
-            .setImage('https://i.imgur.com/AfFp7pu.png')
             .setFooter({ text: `${interaction.guild.name} • Ticket System`, iconURL: interaction.guild.iconURL() })
             .setTimestamp();
 
