@@ -22,15 +22,13 @@ module.exports = {
 
         // Speichere Config wenn angegeben
         if (category || supportRole) {
-            let config = await GuildConfig.findOne({ guildId: interaction.guild.id });
+            let config = GuildConfig.findOne({ guildId: interaction.guild.id });
             if (!config) {
-                config = {
-                    guildId: interaction.guild.id
-                };
+                config = GuildConfig.create(interaction.guild.id);
             }
             if (category) config.ticketCategoryId = category.id;
             if (supportRole) config.supportRoleId = supportRole.id;
-            await GuildConfig.save(config);
+            GuildConfig.save(config);
         }
 
         const embed = new EmbedBuilder()
@@ -54,12 +52,12 @@ module.exports = {
                 new ButtonBuilder()
                     .setCustomId('ticket_open')
                     .setLabel('Ticket erstellen')
-                    .setEmoji('�')
+                    .setEmoji('🎫')
                     .setStyle(ButtonStyle.Primary),
                 new ButtonBuilder()
                     .setCustomId('application_open')
                     .setLabel('Bewerbung')
-                    .setEmoji('�')
+                    .setEmoji('📝')
                     .setStyle(ButtonStyle.Success)
             );
 

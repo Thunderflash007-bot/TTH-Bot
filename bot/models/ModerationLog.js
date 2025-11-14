@@ -5,11 +5,24 @@ class ModerationLog {
         this.db = new Database('moderationlogs');
     }
 
-    async save(data) {
+    create(data) {
+        const log = {
+            id: Date.now().toString(),
+            guildId: data.guildId,
+            userId: data.userId,
+            moderatorId: data.moderatorId,
+            action: data.action,
+            reason: data.reason || 'Kein Grund angegeben',
+            timestamp: new Date().toISOString()
+        };
+        return this.db.insert(log);
+    }
+
+    save(data) {
         return this.db.insert(data);
     }
 
-    async find(query) {
+    find(query) {
         return this.db.find(query);
     }
 

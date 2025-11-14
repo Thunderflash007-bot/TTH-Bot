@@ -18,7 +18,7 @@ module.exports = {
     
     async execute(interaction) {
         // Prüfe ob in Ticket-Channel
-        const ticket = Ticket.findOne({ channelId: interaction.channel.id });
+        const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
         
         if (!ticket) {
             return await interaction.reply({ 

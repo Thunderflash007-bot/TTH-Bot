@@ -54,7 +54,7 @@ module.exports = {
 
             // Logging
             try {
-                await ModerationLog.save({
+                ModerationLog.create({
                     guildId: interaction.guild.id,
                     userId: target.id,
                     moderatorId: interaction.user.id,
